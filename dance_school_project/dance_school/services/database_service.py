@@ -44,6 +44,25 @@ class DatabaseService:
         JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
         JOIN dance_styles_nesterovas_21_8 ds ON s.dance_style_id = ds.dance_style_id
         WHERE s.schedule_status_nesterovas_21_8 = 'активно'
+        ORDER BY t.trainer_full_name_nesterovas_21_8, class_weekday_nesterovas_21_8
         LIMIT 10
         """
         return DatabaseService.execute_query(query)
+    
+    @staticmethod
+    def call_procedure(proc_name, params=None):
+        """Вызывает хранимую процедуру"""
+        conn = DatabaseService.get_connection()
+        cur = conn.cursor()
+        try:
+            # Формируем вызов процедуры
+            placeholders = ', '.join(['%s'] * len(params)) if params else ''
+            call_query = f"CALL {proc_name}({placeholders})"
+            cur.execute(call_query, params or ())
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cur.close()
+            conn.close()

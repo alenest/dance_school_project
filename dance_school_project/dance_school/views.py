@@ -1,6 +1,104 @@
 # dance_school/views.py
-from django.shortcuts import render
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .services.auth_service import AuthService
+from .services.admin_service import AdminService
 from .services.database_service import DatabaseService
+
+def admin_dashboard(request):
+    # Проверяем, что пользователь админ
+    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+        return redirect('home')
+    
+    # Получаем данные для всех таблиц
+    context = {
+        'clients': AdminService.get_all_clients(),
+        'dance_styles': AdminService.get_all_dance_styles(),
+        'trainers': AdminService.get_all_trainers(),
+        'halls': AdminService.get_all_halls(),
+        'training_periods': AdminService.get_all_training_periods(),
+        'training_slots': AdminService.get_all_training_slots(),
+        'administrators': AdminService.get_all_administrators(),
+        'schedules': AdminService.get_all_schedules(),
+        'registrations': AdminService.get_all_registrations(),
+    }
+    
+    return render(request, 'dance_school/admin_dashboard.html', context)
+
+def admin_add_record(request, table_name):
+    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            if table_name == 'clients':
+                AdminService.insert_client(
+                    request.POST['phone'],
+                    request.POST['full_name'],
+                    request.POST['birth_date'],
+                    request.POST.get('email'),
+                    request.POST.get('parent_name'),
+                    request.POST.get('status', 'активен')
+                )
+            elif table_name == 'dance_styles':
+                AdminService.insert_dance_style(
+                    request.POST['style_name'],
+                    request.POST['difficulty_level'],
+                    request.POST['target_age_group'],
+                    request.POST.get('status', 'активно')
+                )
+            # Добавьте обработку для других таблиц по аналогии
+            
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка: {e}")
+    
+    return render(request, 'dance_school/admin_add.html', {'table_name': table_name})
+
+def admin_edit_record(request, table_name, record_id):
+    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            if table_name == 'clients':
+                AdminService.update_client(
+                    record_id,
+                    request.POST.get('phone'),
+                    request.POST.get('full_name'),
+                    request.POST.get('birth_date'),
+                    request.POST.get('email'),
+                    request.POST.get('parent_name'),
+                    request.POST.get('status')
+                )
+            # Добавьте обработку для других таблиц по аналогии
+            
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка: {e}")
+    
+    # Получаем данные записи для редактирования
+    record = DatabaseService.execute_query(f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {table_name[:-1]}_id = %s", [record_id])
+    return render(request, 'dance_school/admin_edit.html', {
+        'table_name': table_name,
+        'record': record[0] if record else None
+    })
+
+def admin_delete_record(request, table_name, record_id):
+    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+        return redirect('home')
+    
+    try:
+        if table_name == 'clients':
+            AdminService.delete_client(record_id)
+        elif table_name == 'dance_styles':
+            AdminService.delete_dance_style(record_id)
+        # Добавьте обработку для других таблиц по аналогии
+        
+        return redirect('admin_dashboard')
+    except Exception as e:
+        return HttpResponse(f"Ошибка: {e}")
 
 def home(request):
 
