@@ -1,6 +1,5 @@
 from .database_service import DatabaseService
 
-
 class AdminService:
     
     # Clients

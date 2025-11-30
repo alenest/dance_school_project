@@ -4,7 +4,6 @@
 <div style="padding: 20px;">
     <h1>Админ-панель школы танцев</h1>
     
-    <!-- Навигация по таблицам -->
     <div style="margin-bottom: 30px;">
         <h2>Управление данными</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -41,7 +40,7 @@
                     <th>ФИО</th>
                     <th>Дата рождения</th>
                     <th>Email</th>
-                    <th>Родитель/опекун</th>
+                    <th>Родитель/Опекун</th>
                     <th>Статус</th>
                     <th>Действия</th>
                 </tr>
@@ -58,8 +57,7 @@
                     <td>{{ client.6 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'clients' client.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'clients' client.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'clients' client.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -93,8 +91,7 @@
                     <td>{{ trainer.3 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'trainers' trainer.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'trainers' trainer.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'trainers' trainer.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -130,8 +127,7 @@
                     <td>{{ style.4 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'dance_styles' style.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'dance_styles' style.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'dance_styles' style.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -161,8 +157,7 @@
                     <td>{{ hall.1 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'halls' hall.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'halls' hall.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'halls' hall.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -192,8 +187,7 @@
                     <td>{{ period.1 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'training_periods' period.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'training_periods' period.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'training_periods' period.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -223,8 +217,7 @@
                     <td>{{ slot.1 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'training_slots' slot.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'training_slots' slot.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'training_slots' slot.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -257,11 +250,10 @@
                     <td>{{ admin.1 }}</td>
                     <td>{{ admin.2 }}</td>
                     <td>{{ admin.3 }}</td>
-                    <td>{{ admin.4|truncatechars:20 }}</td>
+                    <td>{{ admin.4|truncatechars:10 }}...</td>
                     <td>
                         <a href="{% url 'admin_edit' 'administrators' admin.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'administrators' admin.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'administrators' admin.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -282,10 +274,10 @@
                     <th>ID</th>
                     <th>Тренер</th>
                     <th>День недели</th>
-                    <th>Период</th>
+                    <th>Период (начало)</th>
                     <th>Время начала</th>
                     <th>Зал</th>
-                    <th>Стиль</th>
+                    <th>Стиль танца</th>
                     <th>Цена</th>
                     <th>Статус</th>
                     <th>Действия</th>
@@ -305,8 +297,7 @@
                     <td>{{ schedule.8 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'schedules' schedule.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'schedules' schedule.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'schedules' schedule.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -327,8 +318,8 @@
                     <th>ID</th>
                     <th>Клиент</th>
                     <th>ID расписания</th>
-                    <th>Дата регистрации</th>
-                    <th>Администратор</th>
+                    <th>Дата и время регистрации</th>
+                    <th>Логин администратора</th>
                     <th>Действия</th>
                 </tr>
             </thead>
@@ -337,13 +328,12 @@
                 <tr>
                     <td>{{ reg.0 }}</td>
                     <td>{{ reg.5 }}</td>
-                    <td>{{ reg.6 }}</td>
+                    <td>{{ reg.2 }}</td>
                     <td>{{ reg.3 }}</td>
                     <td>{{ reg.4 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'registrations' reg.0 %}" style="color: blue;">Редактировать</a>
-                        <a href="{% url 'admin_delete' 'registrations' reg.0 %}" style="color: red; margin-left: 10px;" 
-                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                        <a href="{% url 'admin_delete' 'registrations' reg.0 %}" style="color: red; margin-left: 10px;" onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>
                 {% endfor %}
