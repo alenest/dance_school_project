@@ -1,6 +1,6 @@
-# dance_school/services/database_service.py
 import psycopg2
 from django.conf import settings
+
 
 class DatabaseService:
     @staticmethod
@@ -27,27 +27,12 @@ class DatabaseService:
                 conn.commit()
                 result = None
             return result
+        except Exception as e:
+            conn.rollback()
+            raise e
         finally:
             cur.close()
             conn.close()
-    
-    @staticmethod
-    def get_schedule_data():
-        """Получает данные расписания из БД"""
-        query = """
-        SELECT 
-            class_weekday_nesterovas_21_8 as day,
-            class_start_time_nesterovas_21_8 as time,
-            ds.dance_style_name_nesterovas_21_8 as style,
-            t.trainer_full_name_nesterovas_21_8 as trainer
-        FROM schedules_nesterovas_21_8 s
-        JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
-        JOIN dance_styles_nesterovas_21_8 ds ON s.dance_style_id = ds.dance_style_id
-        WHERE s.schedule_status_nesterovas_21_8 = 'активно'
-        ORDER BY t.trainer_full_name_nesterovas_21_8, class_weekday_nesterovas_21_8
-        LIMIT 10
-        """
-        return DatabaseService.execute_query(query)
     
     @staticmethod
     def call_procedure(proc_name, params=None):
@@ -66,3 +51,20 @@ class DatabaseService:
         finally:
             cur.close()
             conn.close()
+    
+    @staticmethod
+    def get_schedule_data():
+        """Получает данные расписания из БД"""
+        query = """
+        SELECT 
+            class_weekday_nesterovas_21_8 as day,
+            class_start_time_nesterovas_21_8 as time,
+            ds.dance_style_name_nesterovas_21_8 as style,
+            t.trainer_full_name_nesterovas_21_8 as trainer
+        FROM schedules_nesterovas_21_8 s
+        JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
+        JOIN dance_styles_nesterovas_21_8 ds ON s.dance_style_id = ds.dance_style_id
+        WHERE s.schedule_status_nesterovas_21_8 = 'активно'
+        LIMIT 10
+        """
+        return DatabaseService.execute_query(query)

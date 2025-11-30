@@ -7,7 +7,6 @@ class AuthService:
     def authenticate(username, password):
         """
         Базовая аутентификация через БД
-        В реальном проекте нужно использовать хэширование паролей!
         """
         # Проверяем в администраторах
         admin_query = """
@@ -15,11 +14,17 @@ class AuthService:
         FROM administrators_nesterovas_21_8 
         WHERE admin_username_nesterovas_21_8 = %s AND admin_password_hash_nesterovas_21_8 = %s
         """
-        admin = DatabaseService.execute_query(admin_query, [username, password])
-        if admin:
-            return {'role': 'admin', 'username': admin[0][0], 'full_name': admin[0][1]}
+        try:
+            admin = DatabaseService.execute_query(admin_query, [username, password])
+            if admin:
+                return {
+                    'role': 'admin', 
+                    'username': admin[0][0], 
+                    'full_name': admin[0][1]
+                }
+        except Exception as e:
+            print(f"Auth error: {e}")
         
-        # TODO: Добавить проверку для тренеров и клиентов
         return None
     
     @staticmethod

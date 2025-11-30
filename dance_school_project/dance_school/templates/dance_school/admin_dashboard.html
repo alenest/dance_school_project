@@ -17,6 +17,12 @@
         </div>
     </div>
 
+    {% if error %}
+        <div style="color: red; padding: 10px; background: #ffeaea; border: 1px solid red;">
+            {{ error }}
+        </div>
+    {% endif %}
+
     <!-- Таблица клиентов -->
     <div id="clients" style="margin-bottom: 40px;">
         <h2>Клиенты 
@@ -56,7 +62,7 @@
         </table>
     </div>
 
-    <!-- Аналогичные блоки для других таблиц -->
+    <!-- Таблица тренеров -->
     <div id="trainers" style="margin-bottom: 40px;">
         <h2>Тренеры
             <a href="{% url 'admin_add' 'trainers' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
@@ -83,6 +89,43 @@
                     <td>
                         <a href="{% url 'admin_edit' 'trainers' trainer.0 %}" style="color: blue;">Редактировать</a>
                         <a href="{% url 'admin_delete' 'trainers' trainer.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица стилей танцев -->
+    <div id="styles" style="margin-bottom: 40px;">
+        <h2>Стили танцев
+            <a href="{% url 'admin_add' 'dance_styles' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Уровень</th>
+                    <th>Возрастная группа</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for style in dance_styles %}
+                <tr>
+                    <td>{{ style.0 }}</td>
+                    <td>{{ style.1 }}</td>
+                    <td>{{ style.2 }}</td>
+                    <td>{{ style.3 }}</td>
+                    <td>{{ style.4 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'dance_styles' style.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'dance_styles' style.0 %}" style="color: red; margin-left: 10px;" 
                            onclick="return confirm('Удалить запись?')">Удалить</a>
                     </td>
                 </tr>

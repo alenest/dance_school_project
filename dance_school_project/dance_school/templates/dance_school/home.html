@@ -2,27 +2,39 @@
 
 {% block content %}
     <!-- Блок аутентификации -->
-<!-- В блоке аутентификации замените форму на: -->
     <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
-        <h2>Вход в систему</h2>
-        <form method="post">
-            {% csrf_token %}
-            <div style="margin: 10px 0;">
-                <label>Логин:</label>
-                <input type="text" name="username" style="margin-left: 10px;" required>
+        {% if user_info %}
+            <h2>Добро пожаловать, {{ user_info.full_name }}!</h2>
+            <p>Роль: {{ user_info.role }}</p>
+            {% if user_info.role == 'admin' %}
+                <a href="{% url 'admin_dashboard' %}" style="display: inline-block; padding: 10px; background: #007bff; color: white; text-decoration: none; margin-right: 10px;">
+                    Админ-панель
+                </a>
+            {% endif %}
+            <a href="{% url 'logout' %}" style="display: inline-block; padding: 10px; background: #dc3545; color: white; text-decoration: none;">
+                Выйти
+            </a>
+        {% else %}
+            <h2>Вход в систему</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div style="margin: 10px 0;">
+                    <label>Логин:</label>
+                    <input type="text" name="username" style="margin-left: 10px;" required>
+                </div>
+                <div style="margin: 10px 0;">
+                    <label>Пароль:</label>
+                    <input type="password" name="password" style="margin-left: 10px;" required>
+                </div>
+                <button type="submit" style="padding: 5px 15px;">Войти</button>
+            </form>
+            {% if error_message %}
+                <div style="color: red; margin-top: 10px;">{{ error_message }}</div>
+            {% endif %}
+            <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                Демо доступ: admin1 / hash1
             </div>
-            <div style="margin: 10px 0;">
-                <label>Пароль:</label>
-                <input type="password" name="password" style="margin-left: 10px;" required>
-            </div>
-            <button type="submit" style="padding: 5px 15px;">Войти</button>
-        </form>
-        {% if error_message %}
-            <div style="color: red; margin-top: 10px;">{{ error_message }}</div>
         {% endif %}
-        <div style="margin-top: 10px; font-size: 14px; color: #666;">
-            Демо доступ: admin1 / hash1 (из вашей БД)
-        </div>
     </div>
 
     <!-- Блок информации о школе -->

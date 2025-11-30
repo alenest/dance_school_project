@@ -1,33 +1,113 @@
-# dance_school/views.py
-
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+import json
+from .services.database_service import DatabaseService
 from .services.auth_service import AuthService
 from .services.admin_service import AdminService
-from .services.database_service import DatabaseService
+
+def home(request):
+    error_message = None
+    user_info = None
+    
+    # Проверяем пользователя через куки (простая реализация)
+    user_cookie = request.COOKIES.get('user_info')
+    if user_cookie:
+        try:
+            user_info = json.loads(user_cookie)
+        except:
+            pass
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = AuthService.authenticate(username, password)
+        
+        if user:
+            user_info = user
+            response = redirect('home')
+            # Сохраняем в куки
+            response.set_cookie('user_info', json.dumps(user_info))
+            return response
+        else:
+            error_message = "Неверный логин или пароль"
+    
+    # Получаем данные расписания
+    try:
+        db_data = DatabaseService.get_schedule_data()
+        schedule_data = []
+        for item in db_data:
+            schedule_data.append({
+                'day': item[0],
+                'time': str(item[1]) if item[1] else '',
+                'style': item[2],
+                'trainer': item[3]
+            })
+    except Exception as e:
+        schedule_data = [
+            {'day': 'Понедельник', 'time': '18:00', 'style': 'Сальса', 'trainer': 'Иванова Мария'},
+            {'day': 'Вторник', 'time': '19:00', 'style': 'Бачата', 'trainer': 'Петров Алексей'},
+            {'day': 'Среда', 'time': '17:00', 'style': 'Танго', 'trainer': 'Сидорова Анна'},
+        ]
+        print(f"Database error: {e}")
+    
+    context = {
+        'schedule_data': schedule_data,
+        'error_message': error_message,
+        'user_info': user_info
+    }
+    return render(request, 'dance_school/home.html', context)
+
+def logout(request):
+    """Выход из системы"""
+    response = redirect('home')
+    response.delete_cookie('user_info')
+    return response
 
 def admin_dashboard(request):
-    # Проверяем, что пользователь админ
-    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+    # Проверяем, что пользователь админ через куки
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
         return redirect('home')
     
     # Получаем данные для всех таблиц
-    context = {
-        'clients': AdminService.get_all_clients(),
-        'dance_styles': AdminService.get_all_dance_styles(),
-        'trainers': AdminService.get_all_trainers(),
-        'halls': AdminService.get_all_halls(),
-        'training_periods': AdminService.get_all_training_periods(),
-        'training_slots': AdminService.get_all_training_slots(),
-        'administrators': AdminService.get_all_administrators(),
-        'schedules': AdminService.get_all_schedules(),
-        'registrations': AdminService.get_all_registrations(),
-    }
+    try:
+        context = {
+            'clients': AdminService.get_all_clients(),
+            'dance_styles': AdminService.get_all_dance_styles(),
+            'trainers': AdminService.get_all_trainers(),
+            'halls': AdminService.get_all_halls(),
+            'training_periods': AdminService.get_all_training_periods(),
+            'training_slots': AdminService.get_all_training_slots(),
+            'administrators': AdminService.get_all_administrators(),
+            'schedules': AdminService.get_all_schedules(),
+            'registrations': AdminService.get_all_registrations(),
+        }
+    except Exception as e:
+        context = {
+            'error': f"Ошибка загрузки данных: {e}"
+        }
     
     return render(request, 'dance_school/admin_dashboard.html', context)
 
 def admin_add_record(request, table_name):
-    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+    # Проверяем авторизацию
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
         return redirect('home')
     
     if request.method == 'POST':
@@ -48,7 +128,17 @@ def admin_add_record(request, table_name):
                     request.POST['target_age_group'],
                     request.POST.get('status', 'активно')
                 )
-            # Добавьте обработку для других таблиц по аналогии
+            elif table_name == 'trainers':
+                AdminService.insert_trainer(
+                    request.POST['phone'],
+                    request.POST['full_name'],
+                    request.POST.get('email')
+                )
+            elif table_name == 'halls':
+                AdminService.insert_hall(
+                    int(request.POST['hall_number']),
+                    int(request.POST['capacity'])
+                )
             
             return redirect('admin_dashboard')
         except Exception as e:
@@ -57,7 +147,16 @@ def admin_add_record(request, table_name):
     return render(request, 'dance_school/admin_add.html', {'table_name': table_name})
 
 def admin_edit_record(request, table_name, record_id):
-    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+    # Проверяем авторизацию
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
         return redirect('home')
     
     if request.method == 'POST':
@@ -72,21 +171,43 @@ def admin_edit_record(request, table_name, record_id):
                     request.POST.get('parent_name'),
                     request.POST.get('status')
                 )
-            # Добавьте обработку для других таблиц по аналогии
+            elif table_name == 'dance_styles':
+                AdminService.update_dance_style(
+                    record_id,
+                    request.POST.get('style_name'),
+                    request.POST.get('difficulty_level'),
+                    request.POST.get('target_age_group'),
+                    request.POST.get('status')
+                )
             
             return redirect('admin_dashboard')
         except Exception as e:
             return HttpResponse(f"Ошибка: {e}")
     
     # Получаем данные записи для редактирования
-    record = DatabaseService.execute_query(f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {table_name[:-1]}_id = %s", [record_id])
-    return render(request, 'dance_school/admin_edit.html', {
-        'table_name': table_name,
-        'record': record[0] if record else None
-    })
+    try:
+        record = DatabaseService.execute_query(
+            f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {table_name[:-1]}_id = %s", 
+            [record_id]
+        )
+        return render(request, 'dance_school/admin_edit.html', {
+            'table_name': table_name,
+            'record': record[0] if record else None
+        })
+    except Exception as e:
+        return HttpResponse(f"Ошибка загрузки данных: {e}")
 
 def admin_delete_record(request, table_name, record_id):
-    if 'user' not in request.session or request.session['user'].get('role') != 'admin':
+    # Проверяем авторизацию
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
         return redirect('home')
     
     try:
@@ -94,50 +215,9 @@ def admin_delete_record(request, table_name, record_id):
             AdminService.delete_client(record_id)
         elif table_name == 'dance_styles':
             AdminService.delete_dance_style(record_id)
-        # Добавьте обработку для других таблиц по аналогии
+        elif table_name == 'trainers':
+            AdminService.delete_trainer(record_id)
         
         return redirect('admin_dashboard')
     except Exception as e:
         return HttpResponse(f"Ошибка: {e}")
-
-def home(request):
-
-    error_message = None
-    
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        from .services.auth_service import AuthService
-        user = AuthService.authenticate(username, password)
-        
-        if user:
-            # Сохраняем пользователя в сессии
-            request.session['user'] = user
-            # TODO: Перенаправлять на разные страницы в зависимости от роли
-        else:
-            error_message = "Неверный логин или пароль"
-    # Получаем реальные данные из БД
-    try:
-        db_data = DatabaseService.get_schedule_data()
-        schedule_data = []
-        for item in db_data:
-            schedule_data.append({
-                'day': item[0],
-                'time': str(item[1]) if item[1] else '',  # Преобразуем время в строку
-                'style': item[2],
-                'trainer': item[3]
-            })
-    except Exception as e:
-        # Если ошибка - используем демо данные
-        schedule_data = [
-            {'day': 'Понедельник', 'time': '18:00', 'style': 'Сальса', 'trainer': 'Иванова Мария'},
-            {'day': 'Вторник', 'time': '19:00', 'style': 'Бачата', 'trainer': 'Петров Алексей'},
-            {'day': 'Среда', 'time': '17:00', 'style': 'Танго', 'trainer': 'Сидорова Анна'},
-        ]
-        print(f"Database error: {e}")  # Для отладки
-    
-    context = {
-        'schedule_data': schedule_data
-    }
-    return render(request, 'dance_school/home.html', context)
