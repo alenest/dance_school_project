@@ -12,8 +12,11 @@
             <a href="#trainers" style="padding: 10px; background: #28a745; color: white; text-decoration: none;">Тренеры</a>
             <a href="#styles" style="padding: 10px; background: #dc3545; color: white; text-decoration: none;">Стили танцев</a>
             <a href="#halls" style="padding: 10px; background: #ffc107; color: black; text-decoration: none;">Залы</a>
-            <a href="#schedules" style="padding: 10px; background: #17a2b8; color: white; text-decoration: none;">Расписание</a>
-            <a href="#registrations" style="padding: 10px; background: #6f42c1; color: white; text-decoration: none;">Регистрации</a>
+            <a href="#periods" style="padding: 10px; background: #17a2b8; color: white; text-decoration: none;">Периоды</a>
+            <a href="#slots" style="padding: 10px; background: #6f42c1; color: white; text-decoration: none;">Временные слоты</a>
+            <a href="#admins" style="padding: 10px; background: #e83e8c; color: white; text-decoration: none;">Администраторы</a>
+            <a href="#schedules" style="padding: 10px; background: #20c997; color: white; text-decoration: none;">Расписание</a>
+            <a href="#registrations" style="padding: 10px; background: #fd7e14; color: white; text-decoration: none;">Регистрации</a>
         </div>
     </div>
 
@@ -38,6 +41,7 @@
                     <th>ФИО</th>
                     <th>Дата рождения</th>
                     <th>Email</th>
+                    <th>Родитель/опекун</th>
                     <th>Статус</th>
                     <th>Действия</th>
                 </tr>
@@ -50,6 +54,7 @@
                     <td>{{ client.2 }}</td>
                     <td>{{ client.3 }}</td>
                     <td>{{ client.4 }}</td>
+                    <td>{{ client.5 }}</td>
                     <td>{{ client.6 }}</td>
                     <td>
                         <a href="{% url 'admin_edit' 'clients' client.0 %}" style="color: blue;">Редактировать</a>
@@ -134,7 +139,217 @@
         </table>
     </div>
 
-    <!-- Добавьте аналогичные блоки для остальных таблиц -->
+    <!-- Таблица залов -->
+    <div id="halls" style="margin-bottom: 40px;">
+        <h2>Залы
+            <a href="{% url 'admin_add' 'halls' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>Номер зала</th>
+                    <th>Вместимость</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hall in halls %}
+                <tr>
+                    <td>{{ hall.0 }}</td>
+                    <td>{{ hall.1 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'halls' hall.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'halls' hall.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица периодов -->
+    <div id="periods" style="margin-bottom: 40px;">
+        <h2>Периоды занятий
+            <a href="{% url 'admin_add' 'training_periods' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in training_periods %}
+                <tr>
+                    <td>{{ period.0 }}</td>
+                    <td>{{ period.1 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'training_periods' period.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'training_periods' period.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица временных слотов -->
+    <div id="slots" style="margin-bottom: 40px;">
+        <h2>Временные слоты
+            <a href="{% url 'admin_add' 'training_slots' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>Время начала</th>
+                    <th>Время окончания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in training_slots %}
+                <tr>
+                    <td>{{ slot.0 }}</td>
+                    <td>{{ slot.1 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'training_slots' slot.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'training_slots' slot.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица администраторов -->
+    <div id="admins" style="margin-bottom: 40px;">
+        <h2>Администраторы
+            <a href="{% url 'admin_add' 'administrators' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>Логин</th>
+                    <th>ФИО</th>
+                    <th>Должность</th>
+                    <th>Телефон</th>
+                    <th>Хэш пароля</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in administrators %}
+                <tr>
+                    <td>{{ admin.0 }}</td>
+                    <td>{{ admin.1 }}</td>
+                    <td>{{ admin.2 }}</td>
+                    <td>{{ admin.3 }}</td>
+                    <td>{{ admin.4|truncatechars:20 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'administrators' admin.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'administrators' admin.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица расписания -->
+    <div id="schedules" style="margin-bottom: 40px;">
+        <h2>Расписание
+            <a href="{% url 'admin_add' 'schedules' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>ID</th>
+                    <th>Тренер</th>
+                    <th>День недели</th>
+                    <th>Период</th>
+                    <th>Время начала</th>
+                    <th>Зал</th>
+                    <th>Стиль</th>
+                    <th>Цена</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <td>{{ schedule.0 }}</td>
+                    <td>{{ schedule.9 }}</td>
+                    <td>{{ schedule.2 }}</td>
+                    <td>{{ schedule.3 }}</td>
+                    <td>{{ schedule.4 }}</td>
+                    <td>{{ schedule.5 }}</td>
+                    <td>{{ schedule.10 }}</td>
+                    <td>{{ schedule.7 }}</td>
+                    <td>{{ schedule.8 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'schedules' schedule.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'schedules' schedule.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Таблица регистраций -->
+    <div id="registrations" style="margin-bottom: 40px;">
+        <h2>Регистрации
+            <a href="{% url 'admin_add' 'registrations' %}" style="margin-left: 20px; font-size: 14px; background: green; color: white; padding: 5px 10px; text-decoration: none;">
+                + Добавить
+            </a>
+        </h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th>ID</th>
+                    <th>Клиент</th>
+                    <th>ID расписания</th>
+                    <th>Дата регистрации</th>
+                    <th>Администратор</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr>
+                    <td>{{ reg.0 }}</td>
+                    <td>{{ reg.5 }}</td>
+                    <td>{{ reg.6 }}</td>
+                    <td>{{ reg.3 }}</td>
+                    <td>{{ reg.4 }}</td>
+                    <td>
+                        <a href="{% url 'admin_edit' 'registrations' reg.0 %}" style="color: blue;">Редактировать</a>
+                        <a href="{% url 'admin_delete' 'registrations' reg.0 %}" style="color: red; margin-left: 10px;" 
+                           onclick="return confirm('Удалить запись?')">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </div>
 {% endblock %}

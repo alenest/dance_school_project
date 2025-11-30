@@ -139,10 +139,46 @@ def admin_add_record(request, table_name):
                     int(request.POST['hall_number']),
                     int(request.POST['capacity'])
                 )
+            elif table_name == 'training_periods':
+                AdminService.insert_training_period(
+                    request.POST['start_date'],
+                    request.POST['end_date']
+                )
+            elif table_name == 'training_slots':
+                AdminService.insert_training_slot(
+                    request.POST['start_time'],
+                    request.POST['end_time']
+                )
+            elif table_name == 'administrators':
+                AdminService.insert_administrator(
+                    request.POST['username'],
+                    request.POST['full_name'],
+                    request.POST['position'],
+                    request.POST['phone'],
+                    request.POST['password_hash']
+                )
+            elif table_name == 'schedules':
+                AdminService.insert_schedule(
+                    int(request.POST['trainer_id']),
+                    request.POST['weekday'],
+                    request.POST['period_start_date'],
+                    request.POST['class_start_time'],
+                    int(request.POST['hall_number']),
+                    int(request.POST['dance_style_id']),
+                    float(request.POST['price']),
+                    request.POST.get('status', 'активно')
+                )
+            elif table_name == 'registrations':
+                AdminService.insert_registration(
+                    int(request.POST['client_id']),
+                    int(request.POST['schedule_id']),
+                    request.POST['registration_datetime'],
+                    request.POST['admin_username']
+                )
             
             return redirect('admin_dashboard')
         except Exception as e:
-            return HttpResponse(f"Ошибка: {e}")
+            return HttpResponse(f"Ошибка: {str(e)}")
     
     return render(request, 'dance_school/admin_add.html', {'table_name': table_name})
 
@@ -179,23 +215,96 @@ def admin_edit_record(request, table_name, record_id):
                     request.POST.get('target_age_group'),
                     request.POST.get('status')
                 )
+            elif table_name == 'trainers':
+                AdminService.update_trainer(
+                    record_id,
+                    request.POST.get('phone'),
+                    request.POST.get('full_name'),
+                    request.POST.get('email')
+                )
+            elif table_name == 'halls':
+                AdminService.update_hall(
+                    int(request.POST['hall_number']),
+                    int(request.POST['capacity'])
+                )
+            elif table_name == 'training_periods':
+                AdminService.update_training_period(
+                    request.POST['start_date'],
+                    request.POST['end_date']
+                )
+            elif table_name == 'training_slots':
+                AdminService.update_training_slot(
+                    request.POST['start_time'],
+                    request.POST['end_time']
+                )
+            elif table_name == 'administrators':
+                AdminService.update_administrator(
+                    request.POST['username'],
+                    request.POST.get('full_name'),
+                    request.POST.get('position'),
+                    request.POST.get('phone'),
+                    request.POST.get('password_hash')
+                )
+            elif table_name == 'schedules':
+                AdminService.update_schedule(
+                    record_id,
+                    int(request.POST.get('trainer_id')) if request.POST.get('trainer_id') else None,
+                    request.POST.get('weekday'),
+                    request.POST.get('period_start_date'),
+                    request.POST.get('class_start_time'),
+                    int(request.POST.get('hall_number')) if request.POST.get('hall_number') else None,
+                    int(request.POST.get('dance_style_id')) if request.POST.get('dance_style_id') else None,
+                    float(request.POST.get('price')) if request.POST.get('price') else None,
+                    request.POST.get('status')
+                )
+            elif table_name == 'registrations':
+                AdminService.update_registration(
+                    record_id,
+                    int(request.POST.get('client_id')) if request.POST.get('client_id') else None,
+                    int(request.POST.get('schedule_id')) if request.POST.get('schedule_id') else None,
+                    request.POST.get('registration_datetime'),
+                    request.POST.get('admin_username')
+                )
             
             return redirect('admin_dashboard')
         except Exception as e:
-            return HttpResponse(f"Ошибка: {e}")
+            return HttpResponse(f"Ошибка: {str(e)}")
     
     # Получаем данные записи для редактирования
     try:
-        record = DatabaseService.execute_query(
-            f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {table_name[:-1]}_id = %s", 
-            [record_id]
-        )
+        if table_name == 'training_periods':
+            record = DatabaseService.execute_query(
+                f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE period_start_date_nesterovas_21_8 = %s", 
+                [record_id]
+            )
+        elif table_name == 'training_slots':
+            record = DatabaseService.execute_query(
+                f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE class_start_time_nesterovas_21_8 = %s", 
+                [record_id]
+            )
+        elif table_name == 'administrators':
+            record = DatabaseService.execute_query(
+                f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE admin_username_nesterovas_21_8 = %s", 
+                [record_id]
+            )
+        elif table_name == 'halls':
+            record = DatabaseService.execute_query(
+                f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE hall_number_nesterovas_21_8 = %s", 
+                [record_id]
+            )
+        else:
+            record = DatabaseService.execute_query(
+                f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {table_name[:-1]}_id = %s", 
+                [record_id]
+            )
+        
         return render(request, 'dance_school/admin_edit.html', {
             'table_name': table_name,
-            'record': record[0] if record else None
+            'record': record[0] if record else None,
+            'record_id': record_id
         })
     except Exception as e:
-        return HttpResponse(f"Ошибка загрузки данных: {e}")
+        return HttpResponse(f"Ошибка загрузки данных: {str(e)}")
 
 def admin_delete_record(request, table_name, record_id):
     # Проверяем авторизацию
@@ -217,7 +326,19 @@ def admin_delete_record(request, table_name, record_id):
             AdminService.delete_dance_style(record_id)
         elif table_name == 'trainers':
             AdminService.delete_trainer(record_id)
+        elif table_name == 'halls':
+            AdminService.delete_hall(int(record_id))
+        elif table_name == 'training_periods':
+            AdminService.delete_training_period(record_id)
+        elif table_name == 'training_slots':
+            AdminService.delete_training_slot(record_id)
+        elif table_name == 'administrators':
+            AdminService.delete_administrator(record_id)
+        elif table_name == 'schedules':
+            AdminService.delete_schedule(record_id)
+        elif table_name == 'registrations':
+            AdminService.delete_registration(record_id)
         
         return redirect('admin_dashboard')
     except Exception as e:
-        return HttpResponse(f"Ошибка: {e}")
+        return HttpResponse(f"Ошибка: {str(e)}")

@@ -1,0 +1,103 @@
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Добавить запись в таблицу: {{ table_name }}</h1>
+    
+    <form method="post" style="max-width: 500px;">
+        {% csrf_token %}
+        
+        {% if table_name == 'clients' %}
+            <div style="margin: 10px 0;">
+                <label>Телефон:</label>
+                <input type="text" name="phone" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ФИО:</label>
+                <input type="text" name="full_name" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата рождения:</label>
+                <input type="date" name="birth_date" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Email:</label>
+                <input type="email" name="email" style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Родитель/опекун:</label>
+                <input type="text" name="parent_name" style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Статус:</label>
+                <select name="status" style="width: 100%; padding: 5px;">
+                    <option value="активен">активен</option>
+                    <option value="неактивен">неактивен</option>
+                </select>
+            </div>
+            
+        {% elif table_name == 'dance_styles' %}
+            <div style="margin: 10px 0;">
+                <label>Название стиля:</label>
+                <input type="text" name="style_name" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Уровень сложности:</label>
+                <select name="difficulty_level" required style="width: 100%; padding: 5px;">
+                    <option value="начальный">начальный</option>
+                    <option value="средний">средний</option>
+                    <option value="продвинутый">продвинутый</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Целевая возрастная группа:</label>
+                <input type="text" name="target_age_group" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Статус:</label>
+                <select name="status" style="width: 100%; padding: 5px;">
+                    <option value="активно">активно</option>
+                    <option value="неактивно">неактивно</option>
+                </select>
+            </div>
+            
+        {% elif table_name == 'trainers' %}
+            <div style="margin: 10px 0;">
+                <label>Телефон:</label>
+                <input type="text" name="phone" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ФИО:</label>
+                <input type="text" name="full_name" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Email:</label>
+                <input type="email" name="email" style="width: 100%; padding: 5px;">
+            </div>
+            
+        {% elif table_name == 'halls' %}
+            <div style="margin: 10px 0;">
+                <label>Номер зала:</label>
+                <input type="number" name="hall_number" required style="width: 100%; padding: 5px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Вместимость:</label>
+                <input type="number" name="capacity" required style="width: 100%; padding: 5px;">
+            </div>
+            
+        {% else %}
+            <p>Форма для добавления в таблицу "{{ table_name }}"</p>
+            <p>Для этой таблицы форма пока не реализована.</p>
+        {% endif %}
+        
+        <div style="margin: 20px 0;">
+            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                Добавить
+            </button>
+            <a href="{% url 'admin_dashboard' %}" style="margin-left: 10px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none;">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

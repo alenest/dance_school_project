@@ -1,5 +1,6 @@
 from .database_service import DatabaseService
 
+
 class AdminService:
     
     # Clients
@@ -71,6 +72,89 @@ class AdminService:
     @staticmethod
     def delete_hall(hall_number):
         DatabaseService.call_procedure('delete_hall_nesterovas_21_8', [hall_number])
+    
+    # Training Periods
+    @staticmethod
+    def insert_training_period(start_date, end_date):
+        DatabaseService.call_procedure('insert_training_period_nesterovas_21_8', [start_date, end_date])
+    
+    @staticmethod
+    def update_training_period(start_date, end_date):
+        DatabaseService.call_procedure('update_training_period_nesterovas_21_8', [start_date, end_date])
+    
+    @staticmethod
+    def delete_training_period(start_date):
+        DatabaseService.call_procedure('delete_training_period_nesterovas_21_8', [start_date])
+    
+    # Training Slots
+    @staticmethod
+    def insert_training_slot(start_time, end_time):
+        DatabaseService.call_procedure('insert_training_slot_nesterovas_21_8', [start_time, end_time])
+    
+    @staticmethod
+    def update_training_slot(start_time, end_time):
+        DatabaseService.call_procedure('update_training_slot_nesterovas_21_8', [start_time, end_time])
+    
+    @staticmethod
+    def delete_training_slot(start_time):
+        DatabaseService.call_procedure('delete_training_slot_nesterovas_21_8', [start_time])
+    
+    # Administrators
+    @staticmethod
+    def insert_administrator(username, full_name, position, phone, password_hash):
+        DatabaseService.call_procedure(
+            'insert_administrator_nesterovas_21_8',
+            [username, full_name, position, phone, password_hash]
+        )
+    
+    @staticmethod
+    def update_administrator(username, full_name=None, position=None, phone=None, password_hash=None):
+        DatabaseService.call_procedure(
+            'update_administrator_nesterovas_21_8',
+            [username, full_name, position, phone, password_hash]
+        )
+    
+    @staticmethod
+    def delete_administrator(username):
+        DatabaseService.call_procedure('delete_administrator_nesterovas_21_8', [username])
+    
+    # Schedules
+    @staticmethod
+    def insert_schedule(trainer_id, weekday, period_start_date, class_start_time, hall_number, dance_style_id, price, status='активно'):
+        DatabaseService.call_procedure(
+            'insert_schedule_nesterovas_21_8',
+            [trainer_id, weekday, period_start_date, class_start_time, hall_number, dance_style_id, price, status]
+        )
+    
+    @staticmethod
+    def update_schedule(schedule_id, trainer_id=None, weekday=None, period_start_date=None, class_start_time=None, hall_number=None, dance_style_id=None, price=None, status=None):
+        DatabaseService.call_procedure(
+            'update_schedule_nesterovas_21_8',
+            [schedule_id, trainer_id, weekday, period_start_date, class_start_time, hall_number, dance_style_id, price, status]
+        )
+    
+    @staticmethod
+    def delete_schedule(schedule_id):
+        DatabaseService.call_procedure('delete_schedule_nesterovas_21_8', [schedule_id])
+    
+    # Registrations
+    @staticmethod
+    def insert_registration(client_id, schedule_id, registration_datetime, admin_username):
+        DatabaseService.call_procedure(
+            'insert_registration_nesterovas_21_8',
+            [client_id, schedule_id, registration_datetime, admin_username]
+        )
+    
+    @staticmethod
+    def update_registration(registration_id, client_id=None, schedule_id=None, registration_datetime=None, admin_username=None):
+        DatabaseService.call_procedure(
+            'update_registration_nesterovas_21_8',
+            [registration_id, client_id, schedule_id, registration_datetime, admin_username]
+        )
+    
+    @staticmethod
+    def delete_registration(registration_id):
+        DatabaseService.call_procedure('delete_registration_nesterovas_21_8', [registration_id])
     
     # Получение данных для отображения
     @staticmethod
