@@ -1,6 +1,7 @@
 import psycopg2
 from django.conf import settings
 
+
 def get_db_connection():
     """Создает соединение с базой данных"""
     return psycopg2.connect(

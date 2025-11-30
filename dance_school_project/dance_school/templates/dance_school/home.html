@@ -1,0 +1,70 @@
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+    <!-- Блок аутентификации -->
+    <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
+        <h2>Вход в систему</h2>
+        <form>
+            <div style="margin: 10px 0;">
+                <label>Логин:</label>
+                <input type="text" name="username" style="margin-left: 10px;">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Пароль:</label>
+                <input type="password" name="password" style="margin-left: 10px;">
+            </div>
+            <button type="submit" style="padding: 5px 15px;">Войти</button>
+        </form>
+        <div style="margin-top: 10px; font-size: 14px; color: #666;">
+            Демо доступ: admin / admin123
+        </div>
+    </div>
+
+    <!-- Блок информации о школе -->
+    <div style="background: #f5f5f5; padding: 30px; margin: 20px 0; position: relative;">
+        <h1>Школа танцев "Гармония"</h1>
+        <p>Добро пожаловать в нашу школу танцев! Мы предлагаем обучение различным танцевальным направлениям 
+        для людей любого возраста и уровня подготовки.</p>
+        
+        <h3>Наши преимущества:</h3>
+        <ul>
+            <li>Профессиональные тренеры с многолетним опытом</li>
+            <li>Современные оборудованные залы</li>
+            <li>Индивидуальный подход к каждому ученику</li>
+            <li>Гибкое расписание занятий</li>
+            <li>Доступные цены и система скидок</li>
+        </ul>
+        
+        <p>Присоединяйтесь к нам и откройте для себя мир танцев!</p>
+        
+        <!-- Место для будущей фотографии -->
+        <div style="height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; margin-top: 20px;">
+            [Здесь будет фотография школы]
+        </div>
+    </div>
+
+    <!-- Таблица с расписанием -->
+    <div style="margin: 20px 0;">
+        <h2>Расписание занятий</h2>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th style="padding: 10px; text-align: left;">День недели</th>
+                    <th style="padding: 10px; text-align: left;">Время</th>
+                    <th style="padding: 10px; text-align: left;">Направление</th>
+                    <th style="padding: 10px; text-align: left;">Тренер</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in schedule_data %}
+                <tr>
+                    <td style="padding: 10px;">{{ item.day }}</td>
+                    <td style="padding: 10px;">{{ item.time }}</td>
+                    <td style="padding: 10px;">{{ item.style }}</td>
+                    <td style="padding: 10px;">{{ item.trainer }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -74,24 +74,24 @@ WSGI_APPLICATION = 'dance_school_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# База данных - используем существующую PostgreSQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dance_school_nesterovas',
-        'USER': 'postgres',
-        'PASSWORD': 'Elozyn_top228',  # Замените на реальный пароль
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# База данных - используем существующую PostgreSQL
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'dance_school_nesterovas',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Elozyn_top228',  # Замените на реальный пароль
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
