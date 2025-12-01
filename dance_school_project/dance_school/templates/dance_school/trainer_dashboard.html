@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель тренера - Школа танцев "Гармония"</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f7fafc;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: #f0f0f0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-name {
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #38a169;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            margin-bottom: 20px;
+            color: #2d3748;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        .price {
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            color: #38a169;
+            font-weight: 500;
+        }
+        
+        .status-inactive {
+            color: #e53e3e;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        
+        .action-btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .action-btn-edit:hover {
+            background: #3182ce;
+        }
+        
+        .action-btn-delete {
+            background: #fc8181;
+            color: white;
+        }
+        
+        .action-btn-delete:hover {
+            background: #f56565;
+        }
+        
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .student-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .student-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .student-info {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+        
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">Школа танцев "Гармония"</a>
+                
+                <div class="nav-links">
+                    <a href="/">Главная</a>
+                    <a href="{% url 'public_schedule' %}">Расписание</a>
+                    <a href="{% url 'trainer_dashboard' %}" class="btn">Тренер панель</a>
+                </div>
+                
+                <div class="user-info">
+                    <span class="user-name">{{ user_info.full_name }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Панель тренера</h1>
+            <p>Добро пожаловать, {{ user_info.full_name }}!</p>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_classes }}</div>
+                <div class="stat-label">Мои занятия</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ students_count }}</div>
+                <div class="stat-label">Мои ученики</div>
+            </div>
+        </div>
+        
+        <!-- Мои расписания -->
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Мои расписания</h2>
+            </div>
+            
+            {% if schedules %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>День недели</th>
+                            <th>Время</th>
+                            <th>Направление</th>
+                            <th>Зал</th>
+                            <th>Цена</th>
+                            <th>Учеников</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>{{ schedule.weekday }}</td>
+                            <td>{{ schedule.start_time }} - {{ schedule.end_time }}</td>
+                            <td>{{ schedule.style }}</td>
+                            <td>{{ schedule.hall }}</td>
+                            <td class="price">{{ schedule.price }} руб.</td>
+                            <td>{{ schedule.students }}</td>
+                            <td class="status-active">{{ schedule.status }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'trainer_edit_schedule' schedule.id %}" class="action-btn action-btn-edit">Редактировать</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>У вас пока нет расписаний.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Мои ученики -->
+        <div class="section">
+            <h2>Мои ученики</h2>
+            
+            {% if students %}
+                <div class="student-list">
+                    {% for student in students %}
+                    <div class="student-card">
+                        <div class="student-name">{{ student.name }}</div>
+                        <div class="student-info">Телефон: {{ student.phone }}</div>
+                        <div class="student-info">Email: {{ student.email }}</div>
+                        <div class="student-info">Дата рождения: {{ student.birth_date }}</div>
+                        <div class="student-info">Направление: {{ student.style }}</div>
+                        <div class="student-info">День/время: {{ student.day }}, {{ student.time }}</div>
+                        <div class="student-info">Статус: {{ student.status }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>У вас пока нет учеников.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Школа танцев "Гармония"</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div>
+                    <p>Контактная информация:</p>
+                    <p>Телефон: +7 (916) 123-45-67</p>
+                    <p>Email: info@dance-school.ru</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,15 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import json
-from datetime import date, time, datetime
 from .services.database_service import DatabaseService
-from .services.auth_service import AuthService
-from .services.admin_service import AdminService
 
 def home(request):
+    """Главная страница с расписанием и функцией расчета скидки для клиентов"""
     error_message = None
     user_info = None
+    discount_result = None
     
+    # Проверяем авторизацию
     user_cookie = request.COOKIES.get('user_info')
     if user_cookie:
         try:
@@ -17,11 +17,13 @@ def home(request):
         except:
             pass
     
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+    # Форма авторизации
+    if request.method == 'POST' and 'login_form' in request.POST:
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        password = request.POST.get('password', '').strip()
         
-        user = AuthService.authenticate(username, password)
+        user = DatabaseService.authenticate_user(email=email, phone=phone, password=password)
         
         if user:
             user_info = user
@@ -29,319 +31,204 @@ def home(request):
             response.set_cookie('user_info', json.dumps(user_info))
             return response
         else:
-            error_message = "Неверный логин или пароль"
+            error_message = "Неверные данные для входа"
     
+    # Форма расчета скидки (для клиентов)
+    if request.method == 'POST' and 'discount_form' in request.POST:
+        if user_info and user_info.get('role') == 'client':
+            try:
+                base_price = float(request.POST.get('base_price', 0))
+                client_age = int(request.POST.get('client_age', 30))
+                registration_count = int(request.POST.get('registration_count', 1))
+                
+                final_price = DatabaseService.calculate_discount(base_price, client_age, registration_count)
+                discount_percent = ((base_price - final_price) / base_price * 100) if base_price > 0 else 0
+                
+                discount_result = {
+                    'base_price': base_price,
+                    'final_price': final_price,
+                    'discount_percent': round(discount_percent, 2),
+                    'client_age': client_age,
+                    'registration_count': registration_count
+                }
+            except Exception as e:
+                discount_result = {'error': str(e)}
+    
+    # Получаем расписание
     try:
-        db_data = DatabaseService.get_schedule_data()
-        schedule_data = []
-        for item in db_data:
-            schedule_data.append({
-                'day': item[0],
-                'time': str(item[1]) if item[1] else '',
+        schedule_data = DatabaseService.get_all_active_schedules()
+        formatted_schedule = []
+        for item in schedule_data:
+            formatted_schedule.append({
+                'id': item[0],
+                'trainer': item[1],
                 'style': item[2],
-                'trainer': item[3]
+                'day': item[3],
+                'start_time': item[4],
+                'end_time': item[5],
+                'hall': item[6],
+                'capacity': item[7],
+                'price': float(item[8]),
+                'status': item[9],
+                'registered': item[10],
+                'available': item[11]
             })
     except Exception as e:
-        schedule_data = [
-            {'day': 'Понедельник', 'time': '18:00', 'style': 'Сальса', 'trainer': 'Иванова Мария'},
-            {'day': 'Вторник', 'time': '19:00', 'style': 'Бачата', 'trainer': 'Петров Алексей'},
-            {'day': 'Среда', 'time': '17:00', 'style': 'Танго', 'trainer': 'Сидорова Анна'},
-        ]
+        print(f"Ошибка получения расписания: {e}")
+        formatted_schedule = []
+    
+    # Получаем статистику для главной страницы
+    try:
+        total_classes = len(formatted_schedule)
+        total_trainers = len(DatabaseService.get_all_trainers())
+        total_styles = len(DatabaseService.get_all_dance_styles())
+    except:
+        total_classes = 0
+        total_trainers = 0
+        total_styles = 0
     
     context = {
-        'schedule_data': schedule_data,
+        'schedule_data': formatted_schedule,
+        'total_classes': total_classes,
+        'total_trainers': total_trainers,
+        'total_styles': total_styles,
         'error_message': error_message,
-        'user_info': user_info
+        'user_info': user_info,
+        'discount_result': discount_result
     }
     return render(request, 'dance_school/home.html', context)
 
 def logout(request):
+    """Выход из системы"""
     response = redirect('home')
     response.delete_cookie('user_info')
     return response
 
-def admin_dashboard(request):
+# Тренерская панель
+def trainer_dashboard(request):
+    """Панель тренера"""
     user_cookie = request.COOKIES.get('user_info')
     if not user_cookie:
         return redirect('home')
     
     try:
         user_info = json.loads(user_cookie)
-        if user_info.get('role') != 'admin':
+        if user_info.get('role') != 'trainer':
             return redirect('home')
     except:
         return redirect('home')
     
-    try:
-        context = {
-            'clients': AdminService.get_all_clients(),
-            'dance_styles': AdminService.get_all_dance_styles(),
-            'trainers': AdminService.get_all_trainers(),
-            'halls': AdminService.get_all_halls(),
-            'training_periods': AdminService.get_all_training_periods(),
-            'training_slots': AdminService.get_all_training_slots(),
-            'administrators': AdminService.get_all_administrators(),
-            'schedules': AdminService.get_all_schedules(),
-            'registrations': AdminService.get_all_registrations(),
-        }
-    except Exception as e:
-        context = {'error': f"Ошибка загрузки данных: {e}"}
-    
-    return render(request, 'dance_school/admin_dashboard.html', context)
-
-def admin_add_record(request, table_name):
-    user_cookie = request.COOKIES.get('user_info')
-    if not user_cookie:
-        return redirect('home')
+    trainer_id = user_info.get('trainer_id')
     
     try:
-        user_info = json.loads(user_cookie)
-        if user_info.get('role') != 'admin':
-            return redirect('home')
-    except:
-        return redirect('home')
-    
-    if request.method == 'POST':
-        try:
-            if table_name == 'clients':
-                # Обрабатываем пустые поля как None
-                phone = request.POST['phone'].strip() or None
-                full_name = request.POST['full_name'].strip() or None
-                birth_date = request.POST['birth_date'].strip() or None
-                email = request.POST.get('email', '').strip() or None
-                parent_name = request.POST.get('parent_name', '').strip() or None
-                status = request.POST.get('status', 'активен').strip() or None
-                
-                AdminService.insert_client(
-                    phone, full_name, birth_date, email, parent_name, status
-                )
-                
-            elif table_name == 'dance_styles':
-                style_name = request.POST['style_name'].strip() or None
-                difficulty_level = request.POST['difficulty_level'].strip() or None
-                target_age_group = request.POST['target_age_group'].strip() or None
-                status = request.POST.get('status', 'активно').strip() or None
-                
-                AdminService.insert_dance_style(
-                    style_name, difficulty_level, target_age_group, status
-                )
-                
-            elif table_name == 'trainers':
-                phone = request.POST['phone'].strip() or None
-                full_name = request.POST['full_name'].strip() or None
-                email = request.POST.get('email', '').strip() or None
-                
-                AdminService.insert_trainer(phone, full_name, email)
-                
-            elif table_name == 'halls':
-                hall_number = int(request.POST['hall_number'])
-                capacity = int(request.POST['capacity'])
-                
-                AdminService.insert_hall(hall_number, capacity)
-                
-            elif table_name == 'training_periods':
-                start_date = request.POST['start_date'].strip() or None
-                end_date = request.POST['end_date'].strip() or None
-                
-                AdminService.insert_training_period(start_date, end_date)
-                
-            elif table_name == 'training_slots':
-                start_time = request.POST['start_time'].strip() or None
-                end_time = request.POST['end_time'].strip() or None
-                
-                AdminService.insert_training_slot(start_time, end_time)
-                
-            elif table_name == 'administrators':
-                username = request.POST['username'].strip() or None
-                full_name = request.POST['full_name'].strip() or None
-                position = request.POST['position'].strip() or None
-                phone = request.POST['phone'].strip() or None
-                password_hash = request.POST['password_hash'].strip() or None
-                
-                AdminService.insert_administrator(
-                    username, full_name, position, phone, password_hash
-                )
-                
-            elif table_name == 'schedules':
-                trainer_id = int(request.POST['trainer_id'])
-                weekday = request.POST['weekday'].strip() or None
-                period_start_date = request.POST['period_start_date'].strip() or None
-                class_start_time = request.POST['class_start_time'].strip() or None
-                hall_number = int(request.POST['hall_number'])
-                dance_style_id = int(request.POST['dance_style_id'])
-                price = float(request.POST['price'])
-                status = request.POST.get('status', 'активно').strip() or None
-                
-                AdminService.insert_schedule(
-                    trainer_id, weekday, period_start_date, class_start_time, 
-                    hall_number, dance_style_id, price, status
-                )
-                
-            elif table_name == 'registrations':
-                client_id = int(request.POST['client_id'])
-                schedule_id = int(request.POST['schedule_id'])
-                registration_datetime = request.POST['registration_datetime'].strip() or None
-                admin_username = request.POST['admin_username'].strip() or None
-                
-                AdminService.insert_registration(
-                    client_id, schedule_id, registration_datetime, admin_username
-                )
-            
-            return redirect('admin_dashboard')
-        except Exception as e:
-            return HttpResponse(f"Ошибка: {e}")
-    
-    return render(request, 'dance_school/admin_add.html', {'table_name': table_name})
-
-def admin_edit_record(request, table_name, record_id):
-    user_cookie = request.COOKIES.get('user_info')
-    if not user_cookie:
-        return redirect('home')
-    
-    try:
-        user_info = json.loads(user_cookie)
-        if user_info.get('role') != 'admin':
-            return redirect('home')
-    except:
-        return redirect('home')
-    
-    # Преобразуем record_id в правильный тип в зависимости от таблицы
-    converted_record_id = record_id
-    if table_name in ['clients', 'dance_styles', 'trainers', 'schedules', 'registrations']:
-        converted_record_id = int(record_id)
-    elif table_name == 'halls':
-        converted_record_id = int(record_id)
-    elif table_name == 'training_periods':
-        converted_record_id = record_id  # Оставляем как строку для даты
-    elif table_name == 'training_slots':
-        converted_record_id = record_id  # Оставляем как строку для времени
-    elif table_name == 'administrators':
-        converted_record_id = record_id  # Оставляем как строку для username
-    
-    if request.method == 'POST':
-        try:
-            if table_name == 'clients':
-                # Обрабатываем пустые поля как None
-                phone = request.POST.get('phone', '').strip() or None
-                full_name = request.POST.get('full_name', '').strip() or None
-                birth_date = request.POST.get('birth_date', '').strip() or None
-                email = request.POST.get('email', '').strip() or None
-                parent_name = request.POST.get('parent_name', '').strip() or None
-                status = request.POST.get('status', '').strip() or None
-                
-                AdminService.update_client(
-                    converted_record_id, phone, full_name, birth_date, email, parent_name, status
-                )
-                
-            elif table_name == 'dance_styles':
-                style_name = request.POST.get('style_name', '').strip() or None
-                difficulty_level = request.POST.get('difficulty_level', '').strip() or None
-                target_age_group = request.POST.get('target_age_group', '').strip() or None
-                status = request.POST.get('status', '').strip() or None
-                
-                AdminService.update_dance_style(
-                    converted_record_id, style_name, difficulty_level, target_age_group, status
-                )
-                
-            elif table_name == 'trainers':
-                phone = request.POST.get('phone', '').strip() or None
-                full_name = request.POST.get('full_name', '').strip() or None
-                email = request.POST.get('email', '').strip() or None
-                
-                AdminService.update_trainer(converted_record_id, phone, full_name, email)
-                
-            elif table_name == 'halls':
-                hall_number = int(request.POST.get('hall_number', 0)) or None
-                capacity = int(request.POST.get('capacity', 0)) or None
-                
-                # Для залов используем прямое обновление, так как первичный ключ может меняться
-                if hall_number and capacity:
-                    DatabaseService.execute_query(
-                        "UPDATE halls_nesterovas_21_8 SET hall_number_nesterovas_21_8 = %s, hall_capacity_nesterovas_21_8 = %s WHERE hall_number_nesterovas_21_8 = %s",
-                        [hall_number, capacity, converted_record_id]
-                    )
-                
-            elif table_name == 'training_periods':
-                start_date = request.POST.get('start_date', '').strip() or None
-                end_date = request.POST.get('end_date', '').strip() or None
-                
-                # Для периодов используем прямое обновление
-                if start_date and end_date:
-                    DatabaseService.execute_query(
-                        "UPDATE training_periods_nesterovas_21_8 SET period_start_date_nesterovas_21_8 = %s, period_end_date_nesterovas_21_8 = %s WHERE period_start_date_nesterovas_21_8 = %s",
-                        [start_date, end_date, converted_record_id]
-                    )
-                
-            elif table_name == 'training_slots':
-                start_time = request.POST.get('start_time', '').strip() or None
-                end_time = request.POST.get('end_time', '').strip() or None
-                
-                # Для временных слотов используем прямое обновление
-                if start_time and end_time:
-                    DatabaseService.execute_query(
-                        "UPDATE training_slots_nesterovas_21_8 SET class_start_time_nesterovas_21_8 = %s, class_end_time_nesterovas_21_8 = %s WHERE class_start_time_nesterovas_21_8 = %s",
-                        [start_time, end_time, converted_record_id]
-                    )
-                
-            elif table_name == 'administrators':
-                username = request.POST.get('username', '').strip() or None
-                full_name = request.POST.get('full_name', '').strip() or None
-                position = request.POST.get('position', '').strip() or None
-                phone = request.POST.get('phone', '').strip() or None
-                password_hash = request.POST.get('password_hash', '').strip() or None
-                
-                # Для администраторов используем прямое обновление
-                if username and full_name:
-                    DatabaseService.execute_query(
-                        "UPDATE administrators_nesterovas_21_8 SET admin_username_nesterovas_21_8 = %s, admin_full_name_nesterovas_21_8 = %s, admin_position_nesterovas_21_8 = %s, admin_phone_nesterovas_21_8 = %s, admin_password_hash_nesterovas_21_8 = %s WHERE admin_username_nesterovas_21_8 = %s",
-                        [username, full_name, position, phone, password_hash, converted_record_id]
-                    )
-                
-            elif table_name == 'schedules':
-                trainer_id = int(request.POST.get('trainer_id', 0)) or None
-                weekday = request.POST.get('weekday', '').strip() or None
-                period_start_date = request.POST.get('period_start_date', '').strip() or None
-                class_start_time = request.POST.get('class_start_time', '').strip() or None
-                hall_number = int(request.POST.get('hall_number', 0)) or None
-                dance_style_id = int(request.POST.get('dance_style_id', 0)) or None
-                price = float(request.POST.get('price', 0)) or None
-                status = request.POST.get('status', '').strip() or None
-                
-                AdminService.update_schedule(
-                    converted_record_id, trainer_id, weekday, period_start_date, 
-                    class_start_time, hall_number, dance_style_id, price, status
-                )
-                
-            elif table_name == 'registrations':
-                client_id = int(request.POST.get('client_id', 0)) or None
-                schedule_id = int(request.POST.get('schedule_id', 0)) or None
-                registration_datetime = request.POST.get('registration_datetime', '').strip() or None
-                admin_username = request.POST.get('admin_username', '').strip() or None
-                
-                AdminService.update_registration(
-                    converted_record_id, client_id, schedule_id, registration_datetime, admin_username
-                )
-            
-            return redirect('admin_dashboard')
-        except Exception as e:
-            return HttpResponse(f"Ошибка: {e}")
-    
-    try:
-        # Формируем правильный SQL запрос в зависимости от типа первичного ключа
-        pk_column = get_primary_key_column(table_name)
-        record = DatabaseService.execute_query(
-            f"SELECT * FROM {table_name}_nesterovas_21_8 WHERE {pk_column} = %s", 
-            [converted_record_id]
-        )
+        # Получаем расписания тренера
+        schedules = DatabaseService.get_trainer_schedules(trainer_id)
+        formatted_schedules = []
+        for sched in schedules:
+            formatted_schedules.append({
+                'id': sched[0],
+                'weekday': sched[1],
+                'start_time': sched[2],
+                'end_time': sched[3],
+                'hall': sched[4],
+                'style': sched[5],
+                'price': float(sched[6]),
+                'status': sched[7],
+                'students': sched[8],
+                'period_start': sched[9],
+                'style_id': sched[10]
+            })
         
-        return render(request, 'dance_school/admin_edit.html', {
-            'table_name': table_name,
-            'record': record[0] if record else None
-        })
+        # Получаем учеников тренера
+        students = DatabaseService.get_trainer_students(trainer_id)
+        formatted_students = []
+        for student in students:
+            formatted_students.append({
+                'id': student[0],
+                'name': student[1],
+                'phone': student[2],
+                'email': student[3],
+                'birth_date': student[4],
+                'status': student[5],
+                'style': student[6],
+                'day': student[7],
+                'time': student[8]
+            })
+        
+        # Статистика
+        students_count = DatabaseService.get_trainer_students_count(trainer_id)
+        
+        context = {
+            'user_info': user_info,
+            'schedules': formatted_schedules,
+            'students': formatted_students,
+            'students_count': students_count,
+            'total_classes': len(formatted_schedules)
+        }
+        
+        return render(request, 'dance_school/trainer_dashboard.html', context)
+    
     except Exception as e:
         return HttpResponse(f"Ошибка загрузки данных: {e}")
 
-def admin_delete_record(request, table_name, record_id):
+def trainer_edit_schedule(request, schedule_id):
+    """Редактирование расписания тренера"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'trainer':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            data = {
+                'weekday': request.POST.get('weekday'),
+                'start_time': request.POST.get('start_time'),
+                'hall_number': int(request.POST.get('hall_number', 0)),
+                'price': float(request.POST.get('price', 0)),
+                'status': request.POST.get('status', 'активно')
+            }
+            
+            DatabaseService.update_trainer_schedule(schedule_id, data)
+            return redirect('trainer_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка обновления: {e}")
+    
+    # Получаем данные расписания для формы
+    try:
+        schedule = DatabaseService.execute_query(
+            "SELECT * FROM schedules_nesterovas_21_8 WHERE schedule_id = %s",
+            [schedule_id]
+        )
+        
+        if not schedule:
+            return HttpResponse("Расписание не найдено")
+        
+        # Проверяем, что тренер редактирует свое расписание
+        if schedule[0][1] != user_info.get('trainer_id'):
+            return HttpResponse("Нет доступа к этому расписанию")
+        
+        halls = DatabaseService.get_all_halls()
+        
+        context = {
+            'user_info': user_info,
+            'schedule': schedule[0],
+            'halls': halls
+        }
+        
+        return render(request, 'dance_school/trainer_edit_schedule.html', context)
+    
+    except Exception as e:
+        return HttpResponse(f"Ошибка: {e}")
+
+# Админ панель (добавлены функции ТЗ)
+def admin_dashboard(request):
+    """Админ панель с функциями ТЗ"""
     user_cookie = request.COOKIES.get('user_info')
     if not user_cookie:
         return redirect('home')
@@ -353,48 +240,121 @@ def admin_delete_record(request, table_name, record_id):
     except:
         return redirect('home')
     
-    # Преобразуем record_id в правильный тип
-    converted_record_id = record_id
-    if table_name in ['clients', 'dance_styles', 'trainers', 'schedules', 'registrations']:
-        converted_record_id = int(record_id)
-    elif table_name == 'halls':
-        converted_record_id = int(record_id)
+    # Обработка функции подсчета клиентов по возрасту
+    age_count_result = None
+    if request.method == 'POST' and 'age_count_form' in request.POST:
+        try:
+            min_age = int(request.POST.get('min_age', 18))
+            max_age = int(request.POST.get('max_age', 40))
+            count = DatabaseService.get_active_clients_by_age(min_age, max_age)
+            age_count_result = {
+                'min_age': min_age,
+                'max_age': max_age,
+                'count': count
+            }
+        except Exception as e:
+            age_count_result = {'error': str(e)}
+    
+    # Обработка функции проверки возраста
+    age_check_result = None
+    if request.method == 'POST' and 'age_check_form' in request.POST:
+        try:
+            birth_date = request.POST.get('birth_date')
+            age_group = request.POST.get('age_group', '18+')
+            
+            # Функция проверки возраста
+            query = """
+            SELECT 
+                EXTRACT(YEAR FROM AGE(CURRENT_DATE, %s::date)) >= 
+                CASE 
+                    WHEN %s = '12+' THEN 12
+                    WHEN %s = '16+' THEN 16
+                    WHEN %s = '18+' THEN 18
+                    WHEN %s = '21+' THEN 21
+                    ELSE 0
+                END as is_allowed
+            """
+            result = DatabaseService.execute_query(query, [birth_date, age_group, age_group, age_group])
+            
+            if result and result[0]:
+                is_allowed = bool(result[0][0])
+                age_check_result = {
+                    'birth_date': birth_date,
+                    'age_group': age_group,
+                    'is_allowed': is_allowed,
+                    'result_text': "Доступ разрешен" if is_allowed else "Доступ запрещен"
+                }
+        except Exception as e:
+            age_check_result = {'error': str(e)}
+    
+    # Получаем все данные для админ панели
+    try:
+        clients = DatabaseService.get_all_clients()
+        trainers = DatabaseService.get_all_trainers()
+        dance_styles = DatabaseService.get_all_dance_styles()
+        halls = DatabaseService.get_all_halls()
+        schedules = DatabaseService.get_all_schedules()
+        registrations = DatabaseService.get_all_registrations()
+        
+        # Статистика
+        total_clients = len(clients)
+        total_trainers = len(trainers)
+        total_classes = len(schedules)
+        active_classes = len([s for s in schedules if s[8] == 'активно'])
+        
+        context = {
+            'user_info': user_info,
+            'clients': clients,
+            'trainers': trainers,
+            'dance_styles': dance_styles,
+            'halls': halls,
+            'schedules': schedules,
+            'registrations': registrations,
+            'age_count_result': age_count_result,
+            'age_check_result': age_check_result,
+            'total_clients': total_clients,
+            'total_trainers': total_trainers,
+            'total_classes': total_classes,
+            'active_classes': active_classes
+        }
+        
+        return render(request, 'dance_school/admin_dashboard.html', context)
+    
+    except Exception as e:
+        return HttpResponse(f"Ошибка загрузки данных: {e}")
+
+# Публичное расписание по дням недели
+def public_schedule(request):
+    """Публичное расписание (доступно без авторизации)"""
+    weekday = request.GET.get('weekday', 'all')
     
     try:
-        if table_name == 'clients':
-            AdminService.delete_client(converted_record_id)
-        elif table_name == 'dance_styles':
-            AdminService.delete_dance_style(converted_record_id)
-        elif table_name == 'trainers':
-            AdminService.delete_trainer(converted_record_id)
-        elif table_name == 'halls':
-            AdminService.delete_hall(converted_record_id)
-        elif table_name == 'training_periods':
-            AdminService.delete_training_period(converted_record_id)
-        elif table_name == 'training_slots':
-            AdminService.delete_training_slot(converted_record_id)
-        elif table_name == 'administrators':
-            AdminService.delete_administrator(converted_record_id)
-        elif table_name == 'schedules':
-            AdminService.delete_schedule(converted_record_id)
-        elif table_name == 'registrations':
-            AdminService.delete_registration(converted_record_id)
+        schedule_data = DatabaseService.get_schedule_by_weekday(weekday if weekday != 'all' else None)
         
-        return redirect('admin_dashboard')
+        formatted_schedule = []
+        for item in schedule_data:
+            formatted_schedule.append({
+                'id': item[0],
+                'trainer': item[1],
+                'style': item[2],
+                'day': item[3],
+                'start_time': item[4],
+                'end_time': item[5],
+                'hall': item[6],
+                'capacity': item[7],
+                'price': float(item[8]),
+                'status': item[9],
+                'registered': item[10],
+                'available': item[11]
+            })
+        
+        context = {
+            'schedule_data': formatted_schedule,
+            'selected_weekday': weekday,
+            'total_classes': len(formatted_schedule)
+        }
+        
+        return render(request, 'dance_school/public_schedule.html', context)
+    
     except Exception as e:
-        return HttpResponse(f"Ошибка: {e}")
-
-def get_primary_key_column(table_name):
-    """Возвращает имя первичного ключа для таблицы"""
-    pk_columns = {
-        'clients': 'client_id',
-        'dance_styles': 'dance_style_id',
-        'trainers': 'trainer_id',
-        'halls': 'hall_number_nesterovas_21_8',
-        'training_periods': 'period_start_date_nesterovas_21_8',
-        'training_slots': 'class_start_time_nesterovas_21_8',
-        'administrators': 'admin_username_nesterovas_21_8',
-        'schedules': 'schedule_id',
-        'registrations': 'registration_id'
-    }
-    return pk_columns.get(table_name, f"{table_name[:-1]}_id")
+        return HttpResponse(f"Ошибка загрузки расписания: {e}")

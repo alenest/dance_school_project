@@ -1,104 +1,545 @@
-{% extends "dance_school/base.html" %}
-
-{% block content %}
-    <!-- Блок аутентификации -->
-    <div style="border: 1px solid #ccc; padding: 20px; margin: 20px 0;">
-        {% if user_info %}
-            <h2>Добро пожаловать, {{ user_info.full_name }}!</h2>
-            <p>Роль: {{ user_info.role }}</p>
-            {% if user_info.role == 'admin' %}
-                <a href="{% url 'admin_dashboard' %}" style="display: inline-block; padding: 10px; background: #007bff; color: white; text-decoration: none; margin-right: 10px;">
-                    Админ-панель
-                </a>
-            {% endif %}
-            <a href="{% url 'logout' %}" style="display: inline-block; padding: 10px; background: #dc3545; color: white; text-decoration: none;">
-                Выйти
-            </a>
-        {% else %}
-            <h2>Вход в систему</h2>
-            <form method="post">
-                {% csrf_token %}
-                <div style="margin: 10px 0;">
-                    <label>Логин:</label>
-                    <input type="text" name="username" style="margin-left: 10px;" required>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Школа танцев "Гармония"</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: #f0f0f0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-name {
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .btn-success {
+            background: #38a169;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
+        }
+        
+        .hero {
+            background: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: #4a5568;
+            max-width: 600px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            margin-bottom: 20px;
+            color: #2d3748;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        .price {
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            color: #38a169;
+            font-weight: 500;
+        }
+        
+        .status-inactive {
+            color: #e53e3e;
+            font-weight: 500;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .discount-calculator {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        
+        .discount-calculator h3 {
+            margin-bottom: 20px;
+        }
+        
+        .discount-result {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">Школа танцев "Гармония"</a>
+                
+                <div class="nav-links">
+                    <a href="/">Главная</a>
+                    <a href="{% url 'public_schedule' %}">Расписание</a>
+                    {% if user_info %}
+                        {% if user_info.role == 'admin' %}
+                            <a href="{% url 'admin_dashboard' %}">Админ панель</a>
+                        {% elif user_info.role == 'trainer' %}
+                            <a href="{% url 'trainer_dashboard' %}">Тренер панель</a>
+                        {% endif %}
+                    {% endif %}
                 </div>
-                <div style="margin: 10px 0;">
-                    <label>Пароль:</label>
-                    <input type="password" name="password" style="margin-left: 10px;" required>
+                
+                <div class="user-info">
+                    {% if user_info %}
+                        <span class="user-name">{{ user_info.full_name }}</span>
+                        <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
+                    {% else %}
+                        <button onclick="document.getElementById('loginModal').style.display='block'" class="btn">Войти</button>
+                    {% endif %}
                 </div>
-                <button type="submit" style="padding: 5px 15px;">Войти</button>
-            </form>
-            {% if error_message %}
-                <div style="color: red; margin-top: 10px;">{{ error_message }}</div>
-            {% endif %}
-            <div style="margin-top: 10px; font-size: 14px; color: #666;">
-                Демо доступ: admin1 / hash1
             </div>
-        {% endif %}
-    </div>
-
-    <!-- Блок информации о школе -->
-    <div style="background: #f5f5f5; padding: 30px; margin: 20px 0; position: relative;">
-        <h1>Школа танцев "Гармония"</h1>
-        <p>Добро пожаловать в нашу школу танцев! Мы предлагаем обучение различным танцевальным направлениям 
-        для людей любого возраста и уровня подготовки.</p>
-        
-        <h3>Наши преимущества:</h3>
-        <ul>
-            <li>Профессиональные тренеры с многолетним опытом</li>
-            <li>Современные оборудованные залы</li>
-            <li>Индивидуальный подход к каждому ученику</li>
-            <li>Гибкое расписание занятий</li>
-            <li>Доступные цены и система скидок</li>
-        </ul>
-        
-        <p>Присоединяйтесь к нам и откройте для себя мир танцев!</p>
-        
-        <!-- Место для будущей фотографии -->
-        <div style="height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; margin-top: 20px;">
-            [Здесь будет фотография школы]
         </div>
-    </div>
-
-    <!-- Таблица с расписанием -->
-    <div style="margin: 20px 0;">
-        <h2>Расписание занятий</h2>
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background: #f0f0f0;">
-                    <th style="padding: 10px; text-align: left;">День недели</th>
-                    <th style="padding: 10px; text-align: left;">Время</th>
-                    <th style="padding: 10px; text-align: left;">Направление</th>
-                    <th style="padding: 10px; text-align: left;">Тренер</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in schedule_data %}
-                <tr>
-                    <td style="padding: 10px;">{{ item.day }}</td>
-                    <td style="padding: 10px;">{{ item.time }}</td>
-                    <td style="padding: 10px;">{{ item.style }}</td>
-                    <td style="padding: 10px;">{{ item.trainer }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div style="margin: 30px 0; padding: 20px; background: #e9ecef;">
-        <h2>Демонстрационные разделы</h2>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-            <a href="{% url 'function_demo' %}" style="padding: 10px; background: #007bff; color: white; text-decoration: none;">
-                Функции БД
-            </a>
-            <a href="{% url 'views_demo' %}" style="padding: 10px; background: #28a745; color: white; text-decoration: none;">
-                Представления для ролей
-            </a>
-            <a href="{% url 'triggers_demo' %}" style="padding: 10px; background: #dc3545; color: white; text-decoration: none;">
-                Триггеры
-            </a>
-        </div>
-    </div> 
-
+    </header>
     
-{% endblock %}
+    <div class="container">
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_classes }}</div>
+                <div class="stat-label">Активных занятий</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_trainers }}</div>
+                <div class="stat-label">Профессиональных тренеров</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_styles }}</div>
+                <div class="stat-label">Направлений танцев</div>
+            </div>
+        </div>
+        
+        <!-- Калькулятор скидки (для клиентов) -->
+        {% if user_info and user_info.role == 'client' %}
+        <div class="discount-calculator">
+            <h3>Калькулятор скидки</h3>
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <input type="hidden" name="discount_form" value="1">
+                
+                <div class="form-group">
+                    <label>Базовая цена (руб.):</label>
+                    <input type="number" name="base_price" value="5000" required min="0" step="100">
+                </div>
+                
+                <div class="form-group">
+                    <label>Ваш возраст:</label>
+                    <input type="number" name="client_age" value="30" required min="0" max="120">
+                </div>
+                
+                <div class="form-group">
+                    <label>Количество предыдущих регистраций:</label>
+                    <input type="number" name="registration_count" value="1" required min="0">
+                </div>
+                
+                <button type="submit" class="btn btn-success">Рассчитать скидку</button>
+            </form>
+            
+            {% if discount_result %}
+                <div class="discount-result">
+                    {% if discount_result.error %}
+                        <div class="alert alert-error">{{ discount_result.error }}</div>
+                    {% else %}
+                        <h4>Результат расчета:</h4>
+                        <p>Базовая цена: {{ discount_result.base_price }} руб.</p>
+                        <p>Итоговая цена: {{ discount_result.final_price }} руб.</p>
+                        <p>Скидка: {{ discount_result.discount_percent }}%</p>
+                        <p>Ваш возраст: {{ discount_result.client_age }} лет</p>
+                        <p>Количество регистраций: {{ discount_result.registration_count }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Актуальное расписание -->
+        <div class="section">
+            <h2>Актуальное расписание занятий</h2>
+            <p><a href="{% url 'public_schedule' %}" class="btn btn-outline">Посмотреть по дням недели</a></p>
+            
+            {% if schedule_data %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>День недели</th>
+                            <th>Время</th>
+                            <th>Направление</th>
+                            <th>Тренер</th>
+                            <th>Зал</th>
+                            <th>Цена</th>
+                            <th>Свободно мест</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in schedule_data %}
+                        <tr>
+                            <td>{{ item.day }}</td>
+                            <td>{{ item.start_time }} - {{ item.end_time }}</td>
+                            <td>{{ item.style }}</td>
+                            <td>{{ item.trainer }}</td>
+                            <td>{{ item.hall }}</td>
+                            <td class="price">{{ item.price }} руб.</td>
+                            <td>{{ item.available }} из {{ item.capacity }}</td>
+                            <td class="status-active">{{ item.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Расписание временно недоступно.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Информация о школе -->
+        <div class="section">
+            <h2>О нашей школе</h2>
+            <p>Школа танцев "Гармония" предоставляет профессиональное обучение различным танцевальным направлениям для людей любого возраста и уровня подготовки.</p>
+            
+            <h3 style="margin-top: 20px;">Наши преимущества:</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li>Профессиональные тренеры с многолетним опытом</li>
+                <li>Современные оборудованные залы</li>
+                <li>Индивидуальный подход к каждому ученику</li>
+                <li>Гибкое расписание занятий</li>
+                <li>Доступные цены и система скидок</li>
+            </ul>
+            
+            <p>Присоединяйтесь к нам и откройте для себя мир танцев!</p>
+        </div>
+    </div>
+    
+    <!-- Модальное окно авторизации -->
+    <div id="loginModal" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+        <div style="background: white; margin: 10% auto; padding: 40px; border-radius: 10px; max-width: 400px;">
+            <h2 style="margin-bottom: 20px;">Вход в систему</h2>
+            
+            <form method="post" class="login-form">
+                {% csrf_token %}
+                <input type="hidden" name="login_form" value="1">
+                
+                <div class="form-group">
+                    <label>Email (для администраторов - логин):</label>
+                    <input type="text" name="email" placeholder="example@mail.ru">
+                </div>
+                
+                <div class="form-group">
+                    <label>Телефон:</label>
+                    <input type="text" name="phone" placeholder="+79161234567">
+                </div>
+                
+                <div class="form-group">
+                    <label>Пароль (только для администраторов):</label>
+                    <input type="password" name="password">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn">Войти</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('loginModal').style.display='none'">Отмена</button>
+                </div>
+            </form>
+            
+            {% if error_message %}
+                <div class="alert alert-error" style="margin-top: 20px;">{{ error_message }}</div>
+            {% endif %}
+            
+            <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                <p><strong>Для входа как:</strong></p>
+                <p>• Клиент или тренер: введите email ИЛИ телефон</p>
+                <p>• Администратор: введите логин и пароль (admin1 / hash1)</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Школа танцев "Гармония"</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div>
+                    <p>Контактная информация:</p>
+                    <p>Телефон: +7 (916) 123-45-67</p>
+                    <p>Email: info@dance-school.ru</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            var modal = document.getElementById('loginModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        // Показать ошибки авторизации
+        {% if error_message %}
+            document.getElementById('loginModal').style.display = 'block';
+        {% endif %}
+    </script>
+</body>
+</html>

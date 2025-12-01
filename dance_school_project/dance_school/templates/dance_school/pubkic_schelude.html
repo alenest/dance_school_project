@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание занятий - Школа танцев "Гармония"</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f7fafc;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            margin-bottom: 20px;
+            color: #2d3748;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .weekday-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .weekday-btn {
+            padding: 8px 16px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .weekday-btn:hover {
+            background: #cbd5e0;
+        }
+        
+        .weekday-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        .price {
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        .available {
+            color: #38a169;
+            font-weight: 500;
+        }
+        
+        .full {
+            color: #e53e3e;
+            font-weight: 500;
+        }
+        
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">Школа танцев "Гармония"</a>
+                <div class="nav-links">
+                    <a href="/">Главная</a>
+                    <a href="{% url 'public_schedule' %}" class="btn">Расписание</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="hero">
+            <h1>Расписание занятий</h1>
+            <p>Выберите день недели для просмотра доступных занятий</p>
+        </div>
+        
+        <div class="section">
+            <h2>Фильтр по дням недели</h2>
+            <div class="weekday-filter">
+                <a href="?weekday=all" class="weekday-btn {% if selected_weekday == 'all' %}active{% endif %}">Все дни</a>
+                <a href="?weekday=Понедельник" class="weekday-btn {% if selected_weekday == 'Понедельник' %}active{% endif %}">Понедельник</a>
+                <a href="?weekday=Вторник" class="weekday-btn {% if selected_weekday == 'Вторник' %}active{% endif %}">Вторник</a>
+                <a href="?weekday=Среда" class="weekday-btn {% if selected_weekday == 'Среда' %}active{% endif %}">Среда</a>
+                <a href="?weekday=Четверг" class="weekday-btn {% if selected_weekday == 'Четверг' %}active{% endif %}">Четверг</a>
+                <a href="?weekday=Пятница" class="weekday-btn {% if selected_weekday == 'Пятница' %}active{% endif %}">Пятница</a>
+                <a href="?weekday=Суббота" class="weekday-btn {% if selected_weekday == 'Суббота' %}active{% endif %}">Суббота</a>
+                <a href="?weekday=Воскресенье" class="weekday-btn {% if selected_weekday == 'Воскресенье' %}active{% endif %}">Воскресенье</a>
+            </div>
+            
+            <h3>Найдено занятий: {{ total_classes }}</h3>
+            
+            {% if schedule_data %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>День недели</th>
+                            <th>Время</th>
+                            <th>Направление</th>
+                            <th>Тренер</th>
+                            <th>Зал</th>
+                            <th>Цена</th>
+                            <th>Записалось</th>
+                            <th>Свободно</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in schedule_data %}
+                        <tr>
+                            <td>{{ item.day }}</td>
+                            <td>{{ item.start_time }} - {{ item.end_time }}</td>
+                            <td>{{ item.style }}</td>
+                            <td>{{ item.trainer }}</td>
+                            <td>Зал №{{ item.hall }}</td>
+                            <td class="price">{{ item.price }} руб.</td>
+                            <td>{{ item.registered }}</td>
+                            <td class="{% if item.available > 0 %}available{% else %}full{% endif %}">
+                                {{ item.available }} из {{ item.capacity }}
+                            </td>
+                            <td>{{ item.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 40px;">
+                    <h3>На выбранный день нет доступных занятий</h3>
+                    <p>Попробуйте выбрать другой день или обратитесь к администратору.</p>
+                </div>
+            {% endif %}
+            
+            <div style="margin-top: 20px;">
+                <a href="/" class="btn btn-outline">Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>Школа танцев "Гармония"</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div>
+                    <p>Контактная информация:</p>
+                    <p>Телефон: +7 (916) 123-45-67</p>
+                    <p>Email: info@dance-school.ru</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
