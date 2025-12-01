@@ -251,26 +251,51 @@ def admin_edit_record(request, table_name, record_id):
                 AdminService.update_trainer(converted_record_id, phone, full_name, email)
                 
             elif table_name == 'halls':
-                capacity = int(request.POST.get('capacity', 0))
-                AdminService.update_hall(converted_record_id, capacity)
+                hall_number = int(request.POST.get('hall_number', 0)) or None
+                capacity = int(request.POST.get('capacity', 0)) or None
+                
+                # Для залов используем прямое обновление, так как первичный ключ может меняться
+                if hall_number and capacity:
+                    DatabaseService.execute_query(
+                        "UPDATE halls_nesterovas_21_8 SET hall_number_nesterovas_21_8 = %s, hall_capacity_nesterovas_21_8 = %s WHERE hall_number_nesterovas_21_8 = %s",
+                        [hall_number, capacity, converted_record_id]
+                    )
                 
             elif table_name == 'training_periods':
+                start_date = request.POST.get('start_date', '').strip() or None
                 end_date = request.POST.get('end_date', '').strip() or None
-                AdminService.update_training_period(converted_record_id, end_date)
+                
+                # Для периодов используем прямое обновление
+                if start_date and end_date:
+                    DatabaseService.execute_query(
+                        "UPDATE training_periods_nesterovas_21_8 SET period_start_date_nesterovas_21_8 = %s, period_end_date_nesterovas_21_8 = %s WHERE period_start_date_nesterovas_21_8 = %s",
+                        [start_date, end_date, converted_record_id]
+                    )
                 
             elif table_name == 'training_slots':
+                start_time = request.POST.get('start_time', '').strip() or None
                 end_time = request.POST.get('end_time', '').strip() or None
-                AdminService.update_training_slot(converted_record_id, end_time)
+                
+                # Для временных слотов используем прямое обновление
+                if start_time and end_time:
+                    DatabaseService.execute_query(
+                        "UPDATE training_slots_nesterovas_21_8 SET class_start_time_nesterovas_21_8 = %s, class_end_time_nesterovas_21_8 = %s WHERE class_start_time_nesterovas_21_8 = %s",
+                        [start_time, end_time, converted_record_id]
+                    )
                 
             elif table_name == 'administrators':
+                username = request.POST.get('username', '').strip() or None
                 full_name = request.POST.get('full_name', '').strip() or None
                 position = request.POST.get('position', '').strip() or None
                 phone = request.POST.get('phone', '').strip() or None
                 password_hash = request.POST.get('password_hash', '').strip() or None
                 
-                AdminService.update_administrator(
-                    converted_record_id, full_name, position, phone, password_hash
-                )
+                # Для администраторов используем прямое обновление
+                if username and full_name:
+                    DatabaseService.execute_query(
+                        "UPDATE administrators_nesterovas_21_8 SET admin_username_nesterovas_21_8 = %s, admin_full_name_nesterovas_21_8 = %s, admin_position_nesterovas_21_8 = %s, admin_phone_nesterovas_21_8 = %s, admin_password_hash_nesterovas_21_8 = %s WHERE admin_username_nesterovas_21_8 = %s",
+                        [username, full_name, position, phone, password_hash, converted_record_id]
+                    )
                 
             elif table_name == 'schedules':
                 trainer_id = int(request.POST.get('trainer_id', 0)) or None

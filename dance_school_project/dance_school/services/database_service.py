@@ -1,11 +1,9 @@
 import psycopg2
 from django.conf import settings
 
-
 class DatabaseService:
     @staticmethod
     def get_connection():
-        """Создает соединение с базой данных"""
         return psycopg2.connect(
             dbname=settings.DATABASES['default']['NAME'],
             user=settings.DATABASES['default']['USER'],
@@ -16,7 +14,6 @@ class DatabaseService:
     
     @staticmethod
     def execute_query(query, params=None):
-        """Выполняет SQL запрос и возвращает результат"""
         conn = DatabaseService.get_connection()
         cur = conn.cursor()
         try:
@@ -36,11 +33,9 @@ class DatabaseService:
     
     @staticmethod
     def call_procedure(proc_name, params=None):
-        """Вызывает хранимую процедуру"""
         conn = DatabaseService.get_connection()
         cur = conn.cursor()
         try:
-            # Формируем вызов процедуры
             placeholders = ', '.join(['%s'] * len(params)) if params else ''
             call_query = f"CALL {proc_name}({placeholders})"
             cur.execute(call_query, params or ())
@@ -54,7 +49,6 @@ class DatabaseService:
     
     @staticmethod
     def get_schedule_data():
-        """Получает данные расписания из БД"""
         query = """
         SELECT 
             class_weekday_nesterovas_21_8 as day,
@@ -68,3 +62,14 @@ class DatabaseService:
         LIMIT 10
         """
         return DatabaseService.execute_query(query)
+    
+    @staticmethod
+    def update_record_directly(table_name, set_values, where_condition, params):
+        """Прямое обновление записи в таблице"""
+        set_clause = ', '.join([f"{col} = %s" for col in set_values.keys()])
+        where_clause = ' AND '.join([f"{col} = %s" for col in where_condition.keys()])
+        
+        query = f"UPDATE {table_name}_nesterovas_21_8 SET {set_clause} WHERE {where_clause}"
+        all_params = list(set_values.values()) + list(where_condition.values())
+        
+        return DatabaseService.execute_query(query, all_params)

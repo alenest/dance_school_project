@@ -77,11 +77,19 @@
             
         {% elif table_name == 'halls' and record %}
             <div style="margin: 10px 0;">
+                <label>Номер зала:</label>
+                <input type="number" name="hall_number" value="{{ record.0 }}">
+            </div>
+            <div style="margin: 10px 0;">
                 <label>Вместимость:</label>
                 <input type="number" name="capacity" value="{{ record.1 }}">
             </div>
             
         {% elif table_name == 'training_periods' and record %}
+            <div style="margin: 10px 0;">
+                <label>Дата начала:</label>
+                <input type="date" name="start_date" value="{{ record.0|date:'Y-m-d' }}">
+            </div>
             <div style="margin: 10px 0;">
                 <label>Дата окончания:</label>
                 <input type="date" name="end_date" value="{{ record.1|date:'Y-m-d' }}">
@@ -89,11 +97,19 @@
             
         {% elif table_name == 'training_slots' and record %}
             <div style="margin: 10px 0;">
+                <label>Время начала:</label>
+                <input type="time" name="start_time" value="{{ record.0|time:'H:i' }}">
+            </div>
+            <div style="margin: 10px 0;">
                 <label>Время окончания:</label>
                 <input type="time" name="end_time" value="{{ record.1|time:'H:i' }}">
             </div>
             
         {% elif table_name == 'administrators' and record %}
+            <div style="margin: 10px 0;">
+                <label>Логин:</label>
+                <input type="text" name="username" value="{{ record.0 }}">
+            </div>
             <div style="margin: 10px 0;">
                 <label>ФИО:</label>
                 <input type="text" name="full_name" value="{{ record.1 }}">
