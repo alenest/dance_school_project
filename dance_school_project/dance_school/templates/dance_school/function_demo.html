@@ -4,50 +4,70 @@
 <div style="padding: 20px;">
     <h1>Демонстрация функций базы данных</h1>
     
+    {% if error %}
+        <div style="color: red; padding: 10px; background: #ffeaea; border: 1px solid red; margin-bottom: 20px;">
+            {{ error }}
+        </div>
+    {% endif %}
+    
     <!-- Табличная функция -->
     <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
         <h2>Табличная функция: Расписание по дням недели</h2>
         <form method="get">
             <select name="weekday">
-                <option value="Понедельник">Понедельник</option>
-                <option value="Вторник">Вторник</option>
-                <option value="Среда">Среда</option>
-                <option value="Четверг">Четверг</option>
-                <option value="Пятница">Пятница</option>
-                <option value="Суббота">Суббота</option>
-                <option value="Воскресенье">Воскресенье</option>
+                <option value="Понедельник" {% if weekday == 'Понедельник' %}selected{% endif %}>Понедельник</option>
+                <option value="Вторник" {% if weekday == 'Вторник' %}selected{% endif %}>Вторник</option>
+                <option value="Среда" {% if weekday == 'Среда' %}selected{% endif %}>Среда</option>
+                <option value="Четверг" {% if weekday == 'Четверг' %}selected{% endif %}>Четверг</option>
+                <option value="Пятница" {% if weekday == 'Пятница' %}selected{% endif %}>Пятница</option>
+                <option value="Суббота" {% if weekday == 'Суббота' %}selected{% endif %}>Суббота</option>
+                <option value="Воскресенье" {% if weekday == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
             </select>
-            <button type="submit">Показать расписание</button>
+            <button type="submit" style="padding: 5px 15px;">Показать расписание</button>
         </form>
         
         {% if schedule_data %}
             <h3>Расписание на {{ weekday }}:</h3>
-            <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="background: #f0f0f0;">
-                        <th>Тренер</th>
-                        <th>Направление</th>
-                        <th>Время начала</th>
-                        <th>Время окончания</th>
-                        <th>Зал</th>
-                        <th>Свободных мест</th>
-                        <th>Цена</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in schedule_data %}
-                    <tr>
-                        <td>{{ item.1 }}</td>
-                        <td>{{ item.2 }}</td>
-                        <td>{{ item.4 }}</td>
-                        <td>{{ item.5 }}</td>
-                        <td>{{ item.6 }}</td>
-                        <td>{{ item.12 }}</td>
-                        <td>{{ item.9 }} руб.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% if schedule_data|length > 0 %}
+                <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th>ID</th>
+                            <th>Тренер</th>
+                            <th>Направление</th>
+                            <th>День</th>
+                            <th>Начало</th>
+                            <th>Конец</th>
+                            <th>Зал</th>
+                            <th>Вместимость</th>
+                            <th>Цена</th>
+                            <th>Статус</th>
+                            <th>Записалось</th>
+                            <th>Свободно</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in schedule_data %}
+                        <tr>
+                            <td style="padding: 8px;">{{ item.0 }}</td>
+                            <td style="padding: 8px;">{{ item.1 }}</td>
+                            <td style="padding: 8px;">{{ item.2 }}</td>
+                            <td style="padding: 8px;">{{ item.3 }}</td>
+                            <td style="padding: 8px;">{{ item.4 }}</td>
+                            <td style="padding: 8px;">{{ item.5 }}</td>
+                            <td style="padding: 8px;">{{ item.6 }}</td>
+                            <td style="padding: 8px;">{{ item.7 }}</td>
+                            <td style="padding: 8px;">{{ item.8 }} руб.</td>
+                            <td style="padding: 8px;">{{ item.9 }}</td>
+                            <td style="padding: 8px;">{{ item.10 }}</td>
+                            <td style="padding: 8px;">{{ item.11 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color: #666; font-style: italic;">На выбранный день нет активных занятий</p>
+            {% endif %}
         {% endif %}
     </div>
     
@@ -56,10 +76,10 @@
         <h2>Скалярная функция: Количество активных клиентов по возрасту</h2>
         <form method="get">
             <label>Минимальный возраст: </label>
-            <input type="number" name="min_age" value="18" style="width: 60px;">
+            <input type="number" name="min_age" value="{% if min_age %}{{ min_age }}{% else %}18{% endif %}" style="width: 60px;">
             <label>Максимальный возраст: </label>
-            <input type="number" name="max_age" value="40" style="width: 60px;">
-            <button type="submit">Посчитать</button>
+            <input type="number" name="max_age" value="{% if max_age %}{{ max_age }}{% else %}40{% endif %}" style="width: 60px;">
+            <button type="submit" style="padding: 5px 15px;">Посчитать</button>
         </form>
         
         {% if client_count is not None %}
@@ -73,17 +93,17 @@
         <form method="get">
             <div style="margin: 10px 0;">
                 <label>Базовая цена: </label>
-                <input type="number" name="base_price" value="5000" step="100">
+                <input type="number" name="base_price" value="{% if discount_data %}{{ discount_data.base_price }}{% else %}5000{% endif %}" step="100" style="width: 100px;">
             </div>
             <div style="margin: 10px 0;">
                 <label>Возраст клиента: </label>
-                <input type="number" name="client_age" value="30">
+                <input type="number" name="client_age" value="{% if discount_data %}{{ discount_data.client_age }}{% else %}30{% endif %}" style="width: 60px;">
             </div>
             <div style="margin: 10px 0;">
                 <label>Количество предыдущих регистраций: </label>
-                <input type="number" name="reg_count" value="1">
+                <input type="number" name="reg_count" value="{% if discount_data %}{{ discount_data.registration_count }}{% else %}1{% endif %}" style="width: 60px;">
             </div>
-            <button type="submit">Рассчитать скидку</button>
+            <button type="submit" style="padding: 5px 15px;">Рассчитать скидку</button>
         </form>
         
         {% if discount_data %}
@@ -113,10 +133,32 @@
         {% endif %}
     </div>
     
-    {% if error %}
-        <div style="color: red; padding: 10px; background: #ffeaea; border: 1px solid red;">
-            {{ error }}
-        </div>
-    {% endif %}
+    <!-- Функция на другом языке -->
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Функция на другом языке: Форматирование телефонного номера</h2>
+        <p>Используется функция <code>format_phone_number_nesterovas_21_8</code> на PL/pgSQL</p>
+        <form method="get">
+            <div style="margin: 10px 0;">
+                <label>Телефонный номер: </label>
+                <input type="text" name="phone" value="{% if phone_data %}{{ phone_data.original }}{% else %}+79161234567{% endif %}" style="width: 200px;">
+                <small>Пример: +79161234567 или 89161234567</small>
+            </div>
+            <button type="submit" style="padding: 5px 15px;">Отформатировать</button>
+        </form>
+        
+        {% if phone_data %}
+            <h3>Результат форматирования:</h3>
+            <table border="1" style="width: 50%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <td style="padding: 10px;"><strong>Исходный номер:</strong></td>
+                    <td style="padding: 10px;">{{ phone_data.original }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><strong>Отформатированный:</strong></td>
+                    <td style="padding: 10px;">{{ phone_data.formatted }}</td>
+                </tr>
+            </table>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
