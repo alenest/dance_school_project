@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="padding: 20px;">
-    <h1>Редактирование записи в таблице: {{ table_name }}</h1>
+    <h1>Редактировать запись в таблице: {{ table_name }}</h1>
     
     <form method="post">
         {% csrf_token %}
@@ -10,83 +10,182 @@
         {% if table_name == 'clients' and record %}
             <div style="margin: 10px 0;">
                 <label>Телефон:</label>
-                <input type="text" name="phone" value="{{ record.1 }}" style="margin-left: 10px;">
+                <input type="text" name="phone" value="{{ record.1 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>ФИО:</label>
-                <input type="text" name="full_name" value="{{ record.2 }}" style="margin-left: 10px;">
+                <input type="text" name="full_name" value="{{ record.2 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Дата рождения:</label>
-                <input type="date" name="birth_date" value="{{ record.3 }}" style="margin-left: 10px;">
+                <input type="date" name="birth_date" value="{{ record.3|date:'Y-m-d' }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Email:</label>
-                <input type="email" name="email" value="{{ record.4 }}" style="margin-left: 10px;">
+                <input type="email" name="email" value="{{ record.4 }}">
             </div>
             <div style="margin: 10px 0;">
-                <label>Родитель/Опекун:</label>
-                <input type="text" name="parent_name" value="{{ record.5 }}" style="margin-left: 10px;">
+                <label>Родитель/опекун:</label>
+                <input type="text" name="parent_name" value="{{ record.5 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Статус:</label>
-                <select name="status" style="margin-left: 10px;">
+                <select name="status">
                     <option value="активен" {% if record.6 == 'активен' %}selected{% endif %}>активен</option>
                     <option value="неактивен" {% if record.6 == 'неактивен' %}selected{% endif %}>неактивен</option>
                 </select>
             </div>
-        
+            
         {% elif table_name == 'dance_styles' and record %}
             <div style="margin: 10px 0;">
                 <label>Название стиля:</label>
-                <input type="text" name="style_name" value="{{ record.1 }}" style="margin-left: 10px;">
+                <input type="text" name="style_name" value="{{ record.1 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Уровень сложности:</label>
-                <input type="text" name="difficulty_level" value="{{ record.2 }}" style="margin-left: 10px;">
+                <select name="difficulty_level">
+                    <option value="начальный" {% if record.2 == 'начальный' %}selected{% endif %}>начальный</option>
+                    <option value="средний" {% if record.2 == 'средний' %}selected{% endif %}>средний</option>
+                    <option value="продвинутый" {% if record.2 == 'продвинутый' %}selected{% endif %}>продвинутый</option>
+                </select>
             </div>
             <div style="margin: 10px 0;">
-                <label>Целевая возрастная группа:</label>
-                <input type="text" name="target_age_group" value="{{ record.3 }}" style="margin-left: 10px;">
+                <label>Возрастная группа:</label>
+                <input type="text" name="target_age_group" value="{{ record.3 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Статус:</label>
-                <select name="status" style="margin-left: 10px;">
+                <select name="status">
                     <option value="активно" {% if record.4 == 'активно' %}selected{% endif %}>активно</option>
                     <option value="неактивно" {% if record.4 == 'неактивно' %}selected{% endif %}>неактивно</option>
                 </select>
             </div>
-        
+            
         {% elif table_name == 'trainers' and record %}
             <div style="margin: 10px 0;">
                 <label>Телефон:</label>
-                <input type="text" name="phone" value="{{ record.1 }}" style="margin-left: 10px;">
+                <input type="text" name="phone" value="{{ record.1 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>ФИО:</label>
-                <input type="text" name="full_name" value="{{ record.2 }}" style="margin-left: 10px;">
+                <input type="text" name="full_name" value="{{ record.2 }}">
             </div>
             <div style="margin: 10px 0;">
                 <label>Email:</label>
-                <input type="email" name="email" value="{{ record.3 }}" style="margin-left: 10px;">
+                <input type="email" name="email" value="{{ record.3 }}">
             </div>
-
+            
         {% elif table_name == 'halls' and record %}
             <div style="margin: 10px 0;">
-                <label>Номер зала:</label>
-                <input type="number" name="hall_number" value="{{ record.0 }}" readonly style="margin-left: 10px;">
+                <label>Вместимость:</label>
+                <input type="number" name="capacity" value="{{ record.1 }}">
+            </div>
+            
+        {% elif table_name == 'training_periods' and record %}
+            <div style="margin: 10px 0;">
+                <label>Дата окончания:</label>
+                <input type="date" name="end_date" value="{{ record.1|date:'Y-m-d' }}">
+            </div>
+            
+        {% elif table_name == 'training_slots' and record %}
+            <div style="margin: 10px 0;">
+                <label>Время окончания:</label>
+                <input type="time" name="end_time" value="{{ record.1|time:'H:i' }}">
+            </div>
+            
+        {% elif table_name == 'administrators' and record %}
+            <div style="margin: 10px 0;">
+                <label>ФИО:</label>
+                <input type="text" name="full_name" value="{{ record.1 }}">
             </div>
             <div style="margin: 10px 0;">
-                <label>Вместимость:</label>
-                <input type="number" name="capacity" value="{{ record.1 }}" style="margin-left: 10px;">
+                <label>Должность:</label>
+                <input type="text" name="position" value="{{ record.2 }}">
             </div>
-
+            <div style="margin: 10px 0;">
+                <label>Телефон:</label>
+                <input type="text" name="phone" value="{{ record.3 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Хэш пароля:</label>
+                <input type="text" name="password_hash" value="{{ record.4 }}">
+            </div>
+            
+        {% elif table_name == 'schedules' and record %}
+            <div style="margin: 10px 0;">
+                <label>ID тренера:</label>
+                <input type="number" name="trainer_id" value="{{ record.1 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>День недели:</label>
+                <select name="weekday">
+                    <option value="Понедельник" {% if record.2 == 'Понедельник' %}selected{% endif %}>Понедельник</option>
+                    <option value="Вторник" {% if record.2 == 'Вторник' %}selected{% endif %}>Вторник</option>
+                    <option value="Среда" {% if record.2 == 'Среда' %}selected{% endif %}>Среда</option>
+                    <option value="Четверг" {% if record.2 == 'Четверг' %}selected{% endif %}>Четверг</option>
+                    <option value="Пятница" {% if record.2 == 'Пятница' %}selected{% endif %}>Пятница</option>
+                    <option value="Суббота" {% if record.2 == 'Суббота' %}selected{% endif %}>Суббота</option>
+                    <option value="Воскресенье" {% if record.2 == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата начала периода:</label>
+                <input type="date" name="period_start_date" value="{{ record.3|date:'Y-m-d' }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Время начала занятия:</label>
+                <input type="time" name="class_start_time" value="{{ record.4|time:'H:i' }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Номер зала:</label>
+                <input type="number" name="hall_number" value="{{ record.5 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ID стиля танца:</label>
+                <input type="number" name="dance_style_id" value="{{ record.6 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Цена:</label>
+                <input type="number" step="0.01" name="price" value="{{ record.7 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Статус:</label>
+                <select name="status">
+                    <option value="активно" {% if record.8 == 'активно' %}selected{% endif %}>активно</option>
+                    <option value="неактивно" {% if record.8 == 'неактивно' %}selected{% endif %}>неактивно</option>
+                </select>
+            </div>
+            
+        {% elif table_name == 'registrations' and record %}
+            <div style="margin: 10px 0;">
+                <label>ID клиента:</label>
+                <input type="number" name="client_id" value="{{ record.1 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ID расписания:</label>
+                <input type="number" name="schedule_id" value="{{ record.2 }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата и время регистрации:</label>
+                <input type="datetime-local" name="registration_datetime" value="{{ record.3|date:'Y-m-d\TH:i' }}">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Логин администратора:</label>
+                <input type="text" name="admin_username" value="{{ record.4 }}">
+            </div>
+            
         {% else %}
-            <p>Форма для редактирования в таблице {{ table_name }} пока не реализована.</p>
+            <p>Редактирование для этой таблицы пока не реализовано</p>
         {% endif %}
         
-        <button type="submit" style="margin-top: 20px; padding: 10px 20px;">Сохранить</button>
-        <a href="{% url 'admin_dashboard' %}" style="margin-left: 10px; padding: 10px 20px; background: #ccc; text-decoration: none;">Отмена</a>
+        <div style="margin: 20px 0;">
+            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                Сохранить
+            </button>
+            <a href="{% url 'admin_dashboard' %}" style="margin-left: 10px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none;">
+                Отмена
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %}

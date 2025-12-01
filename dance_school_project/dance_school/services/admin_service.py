@@ -1,7 +1,6 @@
 from .database_service import DatabaseService
 
 class AdminService:
-    
     # Clients
     @staticmethod
     def insert_client(phone, full_name, birth_date, email=None, parent_name=None, status='активен'):
@@ -155,7 +154,7 @@ class AdminService:
     def delete_registration(registration_id):
         DatabaseService.call_procedure('delete_registration_nesterovas_21_8', [registration_id])
     
-    # Получение данных для отображения
+    # Get all methods
     @staticmethod
     def get_all_clients():
         return DatabaseService.execute_query("SELECT * FROM clients_nesterovas_21_8 ORDER BY client_id")

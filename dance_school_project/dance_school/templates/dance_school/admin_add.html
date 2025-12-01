@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="padding: 20px;">
-    <h1>Добавление записи в таблицу: {{ table_name }}</h1>
+    <h1>Добавить запись в таблицу: {{ table_name }}</h1>
     
     <form method="post">
         {% csrf_token %}
@@ -10,83 +10,196 @@
         {% if table_name == 'clients' %}
             <div style="margin: 10px 0;">
                 <label>Телефон:</label>
-                <input type="text" name="phone" required style="margin-left: 10px;">
+                <input type="text" name="phone" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>ФИО:</label>
-                <input type="text" name="full_name" required style="margin-left: 10px;">
+                <input type="text" name="full_name" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Дата рождения:</label>
-                <input type="date" name="birth_date" required style="margin-left: 10px;">
+                <input type="date" name="birth_date" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Email:</label>
-                <input type="email" name="email" style="margin-left: 10px;">
+                <input type="email" name="email">
             </div>
             <div style="margin: 10px 0;">
-                <label>Родитель/Опекун:</label>
-                <input type="text" name="parent_name" style="margin-left: 10px;">
+                <label>Родитель/опекун:</label>
+                <input type="text" name="parent_name">
             </div>
             <div style="margin: 10px 0;">
                 <label>Статус:</label>
-                <select name="status" style="margin-left: 10px;">
+                <select name="status">
                     <option value="активен">активен</option>
                     <option value="неактивен">неактивен</option>
                 </select>
             </div>
-        
+            
         {% elif table_name == 'dance_styles' %}
             <div style="margin: 10px 0;">
                 <label>Название стиля:</label>
-                <input type="text" name="style_name" required style="margin-left: 10px;">
+                <input type="text" name="style_name" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Уровень сложности:</label>
-                <input type="text" name="difficulty_level" required style="margin-left: 10px;">
+                <select name="difficulty_level" required>
+                    <option value="начальный">начальный</option>
+                    <option value="средний">средний</option>
+                    <option value="продвинутый">продвинутый</option>
+                </select>
             </div>
             <div style="margin: 10px 0;">
-                <label>Целевая возрастная группа:</label>
-                <input type="text" name="target_age_group" required style="margin-left: 10px;">
+                <label>Возрастная группа:</label>
+                <input type="text" name="target_age_group" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Статус:</label>
-                <select name="status" style="margin-left: 10px;">
+                <select name="status">
                     <option value="активно">активно</option>
                     <option value="неактивно">неактивно</option>
                 </select>
             </div>
-        
+            
         {% elif table_name == 'trainers' %}
             <div style="margin: 10px 0;">
                 <label>Телефон:</label>
-                <input type="text" name="phone" required style="margin-left: 10px;">
+                <input type="text" name="phone" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>ФИО:</label>
-                <input type="text" name="full_name" required style="margin-left: 10px;">
+                <input type="text" name="full_name" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Email:</label>
-                <input type="email" name="email" style="margin-left: 10px;">
+                <input type="email" name="email">
             </div>
-
+            
         {% elif table_name == 'halls' %}
             <div style="margin: 10px 0;">
                 <label>Номер зала:</label>
-                <input type="number" name="hall_number" required style="margin-left: 10px;">
+                <input type="number" name="hall_number" required>
             </div>
             <div style="margin: 10px 0;">
                 <label>Вместимость:</label>
-                <input type="number" name="capacity" required style="margin-left: 10px;">
+                <input type="number" name="capacity" required>
             </div>
-
-        {% else %}
-            <p>Форма для добавления в таблицу {{ table_name }} пока не реализована.</p>
+            
+        {% elif table_name == 'training_periods' %}
+            <div style="margin: 10px 0;">
+                <label>Дата начала:</label>
+                <input type="date" name="start_date" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата окончания:</label>
+                <input type="date" name="end_date" required>
+            </div>
+            
+        {% elif table_name == 'training_slots' %}
+            <div style="margin: 10px 0;">
+                <label>Время начала:</label>
+                <input type="time" name="start_time" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Время окончания:</label>
+                <input type="time" name="end_time" required>
+            </div>
+            
+        {% elif table_name == 'administrators' %}
+            <div style="margin: 10px 0;">
+                <label>Логин:</label>
+                <input type="text" name="username" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ФИО:</label>
+                <input type="text" name="full_name" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Должность:</label>
+                <input type="text" name="position" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Телефон:</label>
+                <input type="text" name="phone" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Хэш пароля:</label>
+                <input type="text" name="password_hash" required>
+            </div>
+            
+        {% elif table_name == 'schedules' %}
+            <div style="margin: 10px 0;">
+                <label>ID тренера:</label>
+                <input type="number" name="trainer_id" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>День недели:</label>
+                <select name="weekday" required>
+                    <option value="Понедельник">Понедельник</option>
+                    <option value="Вторник">Вторник</option>
+                    <option value="Среда">Среда</option>
+                    <option value="Четверг">Четверг</option>
+                    <option value="Пятница">Пятница</option>
+                    <option value="Суббота">Суббота</option>
+                    <option value="Воскресенье">Воскресенье</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата начала периода:</label>
+                <input type="date" name="period_start_date" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Время начала занятия:</label>
+                <input type="time" name="class_start_time" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Номер зала:</label>
+                <input type="number" name="hall_number" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ID стиля танца:</label>
+                <input type="number" name="dance_style_id" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Цена:</label>
+                <input type="number" step="0.01" name="price" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Статус:</label>
+                <select name="status">
+                    <option value="активно">активно</option>
+                    <option value="неактивно">неактивно</option>
+                </select>
+            </div>
+            
+        {% elif table_name == 'registrations' %}
+            <div style="margin: 10px 0;">
+                <label>ID клиента:</label>
+                <input type="number" name="client_id" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>ID расписания:</label>
+                <input type="number" name="schedule_id" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Дата и время регистрации:</label>
+                <input type="datetime-local" name="registration_datetime" required>
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Логин администратора:</label>
+                <input type="text" name="admin_username" required>
+            </div>
+            
         {% endif %}
         
-        <button type="submit" style="margin-top: 20px; padding: 10px 20px;">Добавить</button>
-        <a href="{% url 'admin_dashboard' %}" style="margin-left: 10px; padding: 10px 20px; background: #ccc; text-decoration: none;">Отмена</a>
+        <div style="margin: 20px 0;">
+            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                Добавить
+            </button>
+            <a href="{% url 'admin_dashboard' %}" style="margin-left: 10px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none;">
+                Отмена
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %}
