@@ -1,6 +1,7 @@
 import psycopg2
 from django.conf import settings
 from decimal import Decimal
+import traceback
 
 class DatabaseService:
     @staticmethod
@@ -27,48 +28,9 @@ class DatabaseService:
             return result
         except Exception as e:
             conn.rollback()
-            raise e
-        finally:
-            cur.close()
-            conn.close()
-    
-    @staticmethod
-    def call_procedure(proc_name, params=None):
-        conn = DatabaseService.get_connection()
-        cur = conn.cursor()
-        try:
-            placeholders = ', '.join(['%s'] * len(params)) if params else ''
-            call_query = f"CALL {proc_name}({placeholders})"
-            cur.execute(call_query, params or ())
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            raise e
-        finally:
-            cur.close()
-            conn.close()
-    
-    @staticmethod
-    def call_function(func_name, params=None, return_type=None):
-        """Вызывает скалярную функцию и возвращает результат"""
-        conn = DatabaseService.get_connection()
-        cur = conn.cursor()
-        try:
-            placeholders = ', '.join(['%s'] * len(params)) if params else ''
-            call_query = f"SELECT {func_name}({placeholders})"
-            cur.execute(call_query, params or ())
-            result = cur.fetchone()
-            
-            if result and return_type:
-                if return_type == 'int':
-                    return int(result[0]) if result[0] else 0
-                elif return_type == 'float':
-                    return float(result[0]) if result[0] else 0.0
-                elif return_type == 'decimal':
-                    return Decimal(str(result[0])) if result[0] else Decimal('0')
-            
-            return result[0] if result else None
-        except Exception as e:
+            print(f"Ошибка выполнения запроса: {e}")
+            print(f"Запрос: {query}")
+            print(f"Параметры: {params}")
             raise e
         finally:
             cur.close()
@@ -82,40 +44,73 @@ class DatabaseService:
         try:
             placeholders = ', '.join(['%s'] * len(params)) if params else ''
             call_query = f"SELECT * FROM {func_name}({placeholders})"
+            print(f"Выполняем табличную функцию: {call_query}")
             cur.execute(call_query, params or ())
             result = cur.fetchall()
-            return result
+            
+            # Получаем описание столбцов
+            column_names = [desc[0] for desc in cur.description]
+            print(f"Колонки: {column_names}")
+            print(f"Найдено записей: {len(result)}")
+            
+            # Форматируем результат для удобства
+            formatted_result = []
+            for row in result:
+                formatted_result.append(row)
+            
+            return formatted_result
         except Exception as e:
-            print(f"Error executing table function {func_name}: {e}")
+            print(f"Ошибка выполнения табличной функции {func_name}: {e}")
+            print(traceback.format_exc())
             return []
         finally:
             cur.close()
             conn.close()
     
-    # Новые методы для работы с функциями и представлениями
-    
     @staticmethod
     def get_schedule_by_weekday(weekday):
         """Табличная функция: возвращает расписание по дню недели"""
         try:
-            return DatabaseService.execute_table_function(
+            print(f"Запрашиваем расписание на день: {weekday}")
+            result = DatabaseService.execute_table_function(
                 'get_schedule_by_weekday_nesterovas_21_8',
                 [weekday]
             )
+            
+            # Если результат пустой, проверим есть ли данные в таблице
+            if not result:
+                print(f"Табличная функция вернула пустой результат для {weekday}")
+                print("Проверяем данные напрямую...")
+                test_query = """
+                SELECT 
+                    s.schedule_id,
+                    t.trainer_full_name_nesterovas_21_8,
+                    d.dance_style_name_nesterovas_21_8,
+                    s.class_weekday_nesterovas_21_8
+                FROM schedules_nesterovas_21_8 s
+                JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
+                JOIN dance_styles_nesterovas_21_8 d ON s.dance_style_id = d.dance_style_id
+                WHERE s.class_weekday_nesterovas_21_8 = %s
+                LIMIT 5
+                """
+                test_result = DatabaseService.execute_query(test_query, [weekday])
+                print(f"Прямой запрос вернул: {len(test_result)} записей")
+            
+            return result
         except Exception as e:
-            print(f"Error in get_schedule_by_weekday: {e}")
+            print(f"Ошибка в get_schedule_by_weekday: {e}")
+            print(traceback.format_exc())
             return []
     
     @staticmethod
     def get_active_clients_by_age(min_age, max_age):
         """Скалярная функция: количество клиентов по возрасту"""
         try:
-            result = DatabaseService.call_function(
-                'get_active_clients_by_age_nesterovas_21_8',
-                [min_age, max_age],
-                'int'
-            )
-            return result if result is not None else 0
+            query = "SELECT get_active_clients_by_age_nesterovas_21_8(%s, %s)"
+            result = DatabaseService.execute_query(query, [min_age, max_age])
+            if result and result[0]:
+                return int(result[0][0])
+            return 0
         except Exception as e:
             print(f"Error in get_active_clients_by_age: {e}")
             return 0
@@ -124,29 +119,27 @@ class DatabaseService:
     def calculate_discount(base_price, client_age, registration_count):
         """Функция расчета скидки"""
         try:
-            # Преобразуем base_price к строке для корректной передачи в NUMERIC
-            base_price_str = str(float(base_price))
-            result = DatabaseService.call_function(
-                'calculate_discount_simple_nesterovas_21_8',
-                [base_price_str, client_age, registration_count],
-                'decimal'
-            )
-            return result if result is not None else Decimal(str(base_price))
+            query = "SELECT calculate_discount_simple_nesterovas_21_8(%s, %s, %s)"
+            result = DatabaseService.execute_query(query, [base_price, client_age, registration_count])
+            if result and result[0]:
+                return float(result[0][0])
+            return float(base_price)
         except Exception as e:
             print(f"Error in calculate_discount: {e}")
-            return Decimal(str(base_price))
+            return float(base_price)
     
     @staticmethod
-    def format_phone_number(phone):
-        """Функция форматирования телефона (на другом языке)"""
+    def check_age_validation(client_birth_date, dance_style_age_group):
+        """Функция на языке SQL: проверка возраста"""
         try:
-            return DatabaseService.call_function(
-                'format_phone_number_nesterovas_21_8',
-                [phone]
-            )
+            query = "SELECT check_age_validation_nesterovas_21_8(%s, %s)"
+            result = DatabaseService.execute_query(query, [client_birth_date, dance_style_age_group])
+            if result and result[0]:
+                return bool(result[0][0])
+            return False
         except Exception as e:
-            print(f"Error in format_phone_number: {e}")
-            return phone
+            print(f"Error in check_age_validation: {e}")
+            return False
     
     @staticmethod
     def get_admin_view():
@@ -180,19 +173,3 @@ class DatabaseService:
         except Exception as e:
             print(f"Error in get_client_view: {e}")
             return []
-    
-    @staticmethod
-    def get_schedule_data():
-        query = """
-        SELECT 
-            class_weekday_nesterovas_21_8 as day,
-            class_start_time_nesterovas_21_8 as time,
-            ds.dance_style_name_nesterovas_21_8 as style,
-            t.trainer_full_name_nesterovas_21_8 as trainer
-        FROM schedules_nesterovas_21_8 s
-        JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
-        JOIN dance_styles_nesterovas_21_8 ds ON s.dance_style_id = ds.dance_style_id
-        WHERE s.schedule_status_nesterovas_21_8 = 'активно'
-        LIMIT 10
-        """
-        return DatabaseService.execute_query(query)
