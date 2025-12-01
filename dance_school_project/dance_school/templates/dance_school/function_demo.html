@@ -1,0 +1,122 @@
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Демонстрация функций базы данных</h1>
+    
+    <!-- Табличная функция -->
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Табличная функция: Расписание по дням недели</h2>
+        <form method="get">
+            <select name="weekday">
+                <option value="Понедельник">Понедельник</option>
+                <option value="Вторник">Вторник</option>
+                <option value="Среда">Среда</option>
+                <option value="Четверг">Четверг</option>
+                <option value="Пятница">Пятница</option>
+                <option value="Суббота">Суббота</option>
+                <option value="Воскресенье">Воскресенье</option>
+            </select>
+            <button type="submit">Показать расписание</button>
+        </form>
+        
+        {% if schedule_data %}
+            <h3>Расписание на {{ weekday }}:</h3>
+            <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #f0f0f0;">
+                        <th>Тренер</th>
+                        <th>Направление</th>
+                        <th>Время начала</th>
+                        <th>Время окончания</th>
+                        <th>Зал</th>
+                        <th>Свободных мест</th>
+                        <th>Цена</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in schedule_data %}
+                    <tr>
+                        <td>{{ item.1 }}</td>
+                        <td>{{ item.2 }}</td>
+                        <td>{{ item.4 }}</td>
+                        <td>{{ item.5 }}</td>
+                        <td>{{ item.6 }}</td>
+                        <td>{{ item.12 }}</td>
+                        <td>{{ item.9 }} руб.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    
+    <!-- Скалярная функция -->
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Скалярная функция: Количество активных клиентов по возрасту</h2>
+        <form method="get">
+            <label>Минимальный возраст: </label>
+            <input type="number" name="min_age" value="18" style="width: 60px;">
+            <label>Максимальный возраст: </label>
+            <input type="number" name="max_age" value="40" style="width: 60px;">
+            <button type="submit">Посчитать</button>
+        </form>
+        
+        {% if client_count is not None %}
+            <h3>Количество активных клиентов в возрасте от {{ min_age }} до {{ max_age }} лет: {{ client_count }}</h3>
+        {% endif %}
+    </div>
+    
+    <!-- Функция расчета скидки -->
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Функция расчета скидки</h2>
+        <form method="get">
+            <div style="margin: 10px 0;">
+                <label>Базовая цена: </label>
+                <input type="number" name="base_price" value="5000" step="100">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Возраст клиента: </label>
+                <input type="number" name="client_age" value="30">
+            </div>
+            <div style="margin: 10px 0;">
+                <label>Количество предыдущих регистраций: </label>
+                <input type="number" name="reg_count" value="1">
+            </div>
+            <button type="submit">Рассчитать скидку</button>
+        </form>
+        
+        {% if discount_data %}
+            <h3>Результат расчета:</h3>
+            <table border="1" style="width: 50%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <td style="padding: 10px;"><strong>Базовая цена:</strong></td>
+                    <td style="padding: 10px;">{{ discount_data.base_price }} руб.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><strong>Итоговая цена:</strong></td>
+                    <td style="padding: 10px;">{{ discount_data.final_price }} руб.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><strong>Скидка:</strong></td>
+                    <td style="padding: 10px;">{{ discount_data.discount_percent }}%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><strong>Возраст клиента:</strong></td>
+                    <td style="padding: 10px;">{{ discount_data.client_age }} лет</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;"><strong>Количество регистраций:</strong></td>
+                    <td style="padding: 10px;">{{ discount_data.registration_count }}</td>
+                </tr>
+            </table>
+        {% endif %}
+    </div>
+    
+    {% if error %}
+        <div style="color: red; padding: 10px; background: #ffeaea; border: 1px solid red;">
+            {{ error }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -84,4 +84,21 @@
             </tbody>
         </table>
     </div>
+
+    <div style="margin: 30px 0; padding: 20px; background: #e9ecef;">
+        <h2>Демонстрационные разделы</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+            <a href="{% url 'function_demo' %}" style="padding: 10px; background: #007bff; color: white; text-decoration: none;">
+                Функции БД
+            </a>
+            <a href="{% url 'views_demo' %}" style="padding: 10px; background: #28a745; color: white; text-decoration: none;">
+                Представления для ролей
+            </a>
+            <a href="{% url 'triggers_demo' %}" style="padding: 10px; background: #dc3545; color: white; text-decoration: none;">
+                Триггеры
+            </a>
+        </div>
+    </div> 
+
+    
 {% endblock %}

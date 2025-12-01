@@ -73,3 +73,60 @@ class DatabaseService:
         all_params = list(set_values.values()) + list(where_condition.values())
         
         return DatabaseService.execute_query(query, all_params)
+
+    # Новые методы для работы с функциями и представлениями
+    
+    @staticmethod
+    def get_schedule_by_weekday(weekday):
+        return DatabaseService.execute_query(
+            "SELECT * FROM get_schedule_by_weekday_nesterovas_21_8(%s)",
+            [weekday]
+        )
+    
+    @staticmethod
+    def get_active_clients_by_age(min_age, max_age):
+        return DatabaseService.call_function(
+            'get_active_clients_by_age_nesterovas_21_8',
+            [min_age, max_age]
+        )
+    
+    @staticmethod
+    def calculate_discount(base_price, client_age, registration_count):
+        return DatabaseService.call_function(
+            'calculate_discount_simple_nesterovas_21_8',
+            [base_price, client_age, registration_count]
+        )
+    
+    @staticmethod
+    def get_admin_view():
+        return DatabaseService.execute_query("SELECT * FROM admin_full_view_nesterovas_21_8")
+    
+    @staticmethod
+    def get_trainer_view(trainer_id):
+        return DatabaseService.execute_query(
+            "SELECT * FROM trainer_view_nesterovas_21_8 WHERE trainer_id = %s",
+            [trainer_id]
+        )
+    
+    @staticmethod
+    def get_client_view(client_id):
+        return DatabaseService.execute_query(
+            "SELECT * FROM client_view_nesterovas_21_8 WHERE client_id = %s",
+            [client_id]
+        )
+    
+    @staticmethod
+    def get_schedule_data():
+        query = """
+        SELECT 
+            class_weekday_nesterovas_21_8 as day,
+            class_start_time_nesterovas_21_8 as time,
+            ds.dance_style_name_nesterovas_21_8 as style,
+            t.trainer_full_name_nesterovas_21_8 as trainer
+        FROM schedules_nesterovas_21_8 s
+        JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
+        JOIN dance_styles_nesterovas_21_8 ds ON s.dance_style_id = ds.dance_style_id
+        WHERE s.schedule_status_nesterovas_21_8 = 'активно'
+        LIMIT 10
+        """
+        return DatabaseService.execute_query(query)

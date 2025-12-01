@@ -1,0 +1,78 @@
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Представления базы данных для разных ролей</h1>
+    <h2>Ваша роль: {{ role }}</h2>
+    <h3>{{ view_name }}</h3>
+    
+    {% if view_data %}
+        <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    {% if role == 'admin' %}
+                        <th>Тип</th>
+                        <th>ID</th>
+                        <th>ФИО</th>
+                        <th>Контакты</th>
+                        <th>Статус</th>
+                        <th>Доп. информация</th>
+                    {% elif role == 'trainer' %}
+                        <th>ID тренера</th>
+                        <th>ФИО тренера</th>
+                        <th>День недели</th>
+                        <th>Время</th>
+                        <th>Направление</th>
+                        <th>Количество учеников</th>
+                    {% elif role == 'client' %}
+                        <th>ID клиента</th>
+                        <th>ФИО клиента</th>
+                        <th>Направление</th>
+                        <th>День недели</th>
+                        <th>Время</th>
+                        <th>Тренер</th>
+                        <th>Дата регистрации</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in view_data %}
+                <tr>
+                    {% if role == 'admin' %}
+                        <td>{{ item.0 }}</td>
+                        <td>{{ item.1 }}</td>
+                        <td>{{ item.2 }}</td>
+                        <td>{{ item.3 }}</td>
+                        <td>{{ item.4 }}</td>
+                        <td>{{ item.5 }}</td>
+                    {% elif role == 'trainer' %}
+                        <td>{{ item.0 }}</td>
+                        <td>{{ item.1 }}</td>
+                        <td>{{ item.2 }}</td>
+                        <td>{{ item.3 }}</td>
+                        <td>{{ item.4 }}</td>
+                        <td>{{ item.5 }}</td>
+                    {% elif role == 'client' %}
+                        <td>{{ item.0 }}</td>
+                        <td>{{ item.1 }}</td>
+                        <td>{{ item.2 }}</td>
+                        <td>{{ item.3 }}</td>
+                        <td>{{ item.4 }}</td>
+                        <td>{{ item.5 }}</td>
+                        <td>{{ item.6 }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет данных для отображения или произошла ошибка.</p>
+    {% endif %}
+    
+    {% if error %}
+        <div style="color: red; padding: 10px; background: #ffeaea; border: 1px solid red;">
+            {{ error }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

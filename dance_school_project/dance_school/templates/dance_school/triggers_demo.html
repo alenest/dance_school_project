@@ -1,0 +1,54 @@
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Демонстрация работы триггеров</h1>
+    
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Триггер проверки возраста</h2>
+        <p>Проверяет, что возраст клиента соответствует возрастной группе направления танцев.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="test_age_trigger">
+            <button type="submit" style="padding: 10px 20px; background: #dc3545; color: white; border: none;">
+                Тестировать триггер (вызовет ошибку)
+            </button>
+        </form>
+    </div>
+    
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #ccc;">
+        <h2>Триггер проверки дублирующихся записей</h2>
+        <p>Предотвращает повторную запись клиента на одно и то же занятие.</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="test_duplicate_trigger">
+            <button type="submit" style="padding: 10px 20px; background: #dc3545; color: white; border: none;">
+                Тестировать триггер (вызовет ошибку)
+            </button>
+        </form>
+    </div>
+    
+    <div style="margin: 30px 0; padding: 20px; border: 1px solid #4CAF50; background: #f0fff0;">
+        <h2>Триггер обновления статуса клиента</h2>
+        <p>Автоматически меняет статус клиента на "активен" при первой регистрации на занятие.</p>
+        <p>Этот триггер работает в фоновом режиме и не требует тестирования.</p>
+    </div>
+    
+    {% if trigger_test %}
+        <div style="margin: 30px 0; padding: 20px; border: 1px solid {% if 'сработал' in trigger_test %}#4CAF50{% else %}#dc3545{% endif %}; 
+                    background: {% if 'сработал' in trigger_test %}#f0fff0{% else %}#ffeaea{% endif %};">
+            <h3>Результат теста:</h3>
+            <p>{{ trigger_test }}</p>
+        </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px; padding: 20px; background: #f8f9fa;">
+        <h3>Описание триггеров в базе данных:</h3>
+        <ul>
+            <li><strong>before_insert_registration_age_check_nesterovas_21_8</strong> - проверяет возраст перед записью</li>
+            <li><strong>before_insert_registration_duplicate_check_nesterovas_21_8</strong> - проверяет дублирование записей</li>
+            <li><strong>after_insert_registration_status_update_nesterovas_21_8</strong> - обновляет статус клиента после записи</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
