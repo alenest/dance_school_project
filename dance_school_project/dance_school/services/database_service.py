@@ -277,7 +277,7 @@ class DatabaseService:
         except:
             return 0
     
-    # ========== МЕТОДЫ ДЛЯ АДМИН-ПАНЕЛИ - ПОЛНЫЙ ФУНКЦИОНАЛ ==========
+    # ========== МЕТОДЫ ДЛЯ АДМИН-ПАНЕЛИ ==========
     
     @staticmethod
     def get_all_clients():
@@ -378,9 +378,9 @@ class DatabaseService:
     
     @staticmethod
     def get_table_structure(table_name):
-        """Получить структуру таблицы (столбцы, типы данных, обязательность)"""
+        """Получить структуру таблицы"""
         query = """
-        SELECT column_name, data_type, is_nullable, column_default
+        SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_name = %s
         ORDER BY ordinal_position
@@ -389,7 +389,7 @@ class DatabaseService:
     
     @staticmethod
     def get_record_by_id(table_name, record_id):
-        """Получить конкретную запись по ID"""
+        """Получить запись по ID"""
         # Определяем primary key для таблицы
         pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
@@ -412,7 +412,7 @@ class DatabaseService:
     
     @staticmethod
     def update_record(table_name, record_id, form_data):
-        """Обновить существующую запись в таблице"""
+        """Обновить запись в таблице"""
         # Определяем primary key для таблицы
         pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
@@ -436,7 +436,7 @@ class DatabaseService:
         
         for key, value in form_data.items():
             if key != pk_column and value is not None and value != '':
-                # Преобразуем значения в нужные типы
+                # Определяем тип данных для правильного форматирования
                 if 'date' in key.lower():
                     set_parts.append(f"{key} = %s::date")
                     values.append(value)
@@ -447,8 +447,12 @@ class DatabaseService:
                     set_parts.append(f"{key} = %s::numeric")
                     values.append(float(value) if value else 0)
                 elif 'id' in key.lower() or 'number' in key.lower():
-                    set_parts.append(f"{key} = %s::integer")
-                    values.append(int(value) if value else 0)
+                    try:
+                        set_parts.append(f"{key} = %s::integer")
+                        values.append(int(value) if value else 0)
+                    except:
+                        set_parts.append(f"{key} = %s")
+                        values.append(value)
                 else:
                     set_parts.append(f"{key} = %s")
                     values.append(value)
@@ -460,6 +464,8 @@ class DatabaseService:
         values.append(record_id)
         
         query = f"UPDATE {table_name} SET {set_clause} WHERE {pk_column} = %s"
+        print(f"Выполняется запрос UPDATE: {query}")
+        print(f"Параметры: {values}")
         DatabaseService.execute_query(query, values, fetch=False)
     
     @staticmethod
@@ -502,9 +508,15 @@ class DatabaseService:
                 elif 'time' in key.lower():
                     values.append(value)
                 elif 'price' in key.lower() or 'capacity' in key.lower():
-                    values.append(float(value) if value else 0)
+                    try:
+                        values.append(float(value) if value else 0)
+                    except:
+                        values.append(0)
                 elif 'id' in key.lower() or 'number' in key.lower():
-                    values.append(int(value) if value else 0)
+                    try:
+                        values.append(int(value) if value else 0)
+                    except:
+                        values.append(0)
                 else:
                     values.append(value)
         
@@ -515,6 +527,8 @@ class DatabaseService:
         placeholders_clause = ", ".join(placeholders)
         
         query = f"INSERT INTO {table_name} ({columns_clause}) VALUES ({placeholders_clause})"
+        print(f"Выполняется запрос INSERT: {query}")
+        print(f"Параметры: {values}")
         DatabaseService.execute_query(query, values, fetch=False)
     
     @staticmethod
@@ -538,4 +552,6 @@ class DatabaseService:
             raise ValueError(f"Неизвестная таблица: {table_name}")
         
         query = f"DELETE FROM {table_name} WHERE {pk_column} = %s"
+        print(f"Выполняется запрос DELETE: {query}")
+        print(f"Параметры: [{record_id}]")
         DatabaseService.execute_query(query, [record_id], fetch=False)

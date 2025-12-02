@@ -1,6 +1,7 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 import json
+import traceback
 from .services.database_service import DatabaseService
 
 def home(request):
@@ -460,7 +461,6 @@ def admin_dashboard(request):
     
     except Exception as e:
         print(f"Ошибка загрузки данных: {str(e)}")
-        traceback.print_exc()
         return HttpResponse(f"Ошибка загрузки данных: {str(e)}")
 
 def admin_edit_record(request):
@@ -479,77 +479,6 @@ def admin_edit_record(request):
     table_name = request.GET.get('table', '')
     record_id = request.GET.get('id', '')
     
-    if not table_name or not record_id:
-        return HttpResponse("Не указана таблица или ID записи")
-    
-    if request.method == 'POST':
-        try:
-            # Собираем данные из формы
-            form_data = {}
-            for key, value in request.POST.items():
-                if key not in ['csrfmiddlewaretoken', 'table', 'id']:
-                    form_data[key] = value
-            
-            # Обновляем запись
-            DatabaseService.update_record(table_name, record_id, form_data)
-            return redirect('admin_dashboard')
-        except Exception as e:
-            return HttpResponse(f"Ошибка обновления: {str(e)}")
-    
-    try:
-        # Получаем структуру таблицы
-        table_structure = DatabaseService.get_table_structure(table_name)
-        
-        # Получаем данные записи
-        record = DatabaseService.get_record_by_id(table_name, record_id)
-        
-        if not record:
-            return HttpResponse("Запись не найдена")
-        
-        # Определяем friendly-имена для таблиц
-        table_display_names = {
-            'clients_nesterovas_21_8': 'Клиенты',
-            'trainers_nesterovas_21_8': 'Тренеры',
-            'dance_styles_nesterovas_21_8': 'Направления танцев',
-            'halls_nesterovas_21_8': 'Залы',
-            'schedules_nesterovas_21_8': 'Расписания',
-            'registrations_nesterovas_21_8': 'Регистрации',
-            'administrators_nesterovas_21_8': 'Администраторы',
-            'training_periods_nesterovas_21_8': 'Периоды занятий',
-            'training_slots_nesterovas_21_8': 'Временные слоты'
-        }
-        
-        context = {
-            'user_info': user_info,
-            'table_name': table_name,
-            'table_display': table_display_names.get(table_name, table_name),
-            'record_id': record_id,
-            'record': record[0] if record else None,
-            'table_structure': table_structure,
-            'action': 'edit'
-        }
-        
-        return render(request, 'dance_school/admin_edit_record.html', context)
-    
-    except Exception as e:
-        print(f"Ошибка загрузки формы: {str(e)}")
-        return HttpResponse(f"Ошибка загрузки формы: {str(e)}")
-
-def admin_add_record(request):
-    """Добавление новой записи в админ панели"""
-    user_cookie = request.COOKIES.get('user_info')
-    if not user_cookie:
-        return redirect('home')
-    
-    try:
-        user_info = json.loads(user_cookie)
-        if user_info.get('role') != 'admin':
-            return redirect('home')
-    except:
-        return redirect('home')
-    
-    table_name = request.GET.get('table', '')
-    
     if not table_name:
         return HttpResponse("Не указана таблица")
     
@@ -558,14 +487,20 @@ def admin_add_record(request):
             # Собираем данные из формы
             form_data = {}
             for key, value in request.POST.items():
-                if key not in ['csrfmiddlewaretoken', 'table']:
-                    form_data[key] = value
+                if key not in ['csrfmiddlewaretoken', 'table', 'id', 'action']:
+                    if value != '':
+                        form_data[key] = value
             
-            # Добавляем запись
-            DatabaseService.insert_record(table_name, form_data)
+            if record_id:
+                # Обновляем запись
+                DatabaseService.update_record(table_name, record_id, form_data)
+            else:
+                # Добавляем запись
+                DatabaseService.insert_record(table_name, form_data)
+                
             return redirect('admin_dashboard')
         except Exception as e:
-            return HttpResponse(f"Ошибка добавления: {str(e)}")
+            return HttpResponse(f"Ошибка сохранения: {str(e)}")
     
     try:
         # Получаем структуру таблицы
@@ -584,18 +519,52 @@ def admin_add_record(request):
             'training_slots_nesterovas_21_8': 'Временные слоты'
         }
         
+        # Получаем данные записи для редактирования
+        record_data = None
+        if record_id:
+            record_result = DatabaseService.get_record_by_id(table_name, record_id)
+            if record_result:
+                record_data = record_result[0]  # Берем первую запись
+        
+        # Подготавливаем данные для шаблона
+        columns_data = []
+        for i, column in enumerate(table_structure):
+            column_name = column[0]
+            data_type = column[1]
+            is_nullable = column[2] == 'YES'
+            
+            # Определяем текущее значение
+            current_value = ''
+            if record_data and i < len(record_data):
+                current_value = record_data[i]
+                # Преобразуем даты и время в строки для отображения в форме
+                if current_value and isinstance(current_value, (datetime.date, datetime.time)):
+                    if isinstance(current_value, datetime.date):
+                        current_value = current_value.strftime('%Y-%m-%d')
+                    elif isinstance(current_value, datetime.time):
+                        current_value = current_value.strftime('%H:%M')
+            
+            columns_data.append({
+                'name': column_name,
+                'data_type': data_type,
+                'is_nullable': is_nullable,
+                'current_value': str(current_value) if current_value is not None else ''
+            })
+        
         context = {
             'user_info': user_info,
             'table_name': table_name,
             'table_display': table_display_names.get(table_name, table_name),
-            'table_structure': table_structure,
-            'action': 'add'
+            'record_id': record_id,
+            'columns_data': columns_data,
+            'action': 'edit' if record_id else 'add'
         }
         
         return render(request, 'dance_school/admin_edit_record.html', context)
     
     except Exception as e:
         print(f"Ошибка загрузки формы: {str(e)}")
+        traceback.print_exc()
         return HttpResponse(f"Ошибка загрузки формы: {str(e)}")
 
 def admin_delete_record(request):
@@ -635,3 +604,22 @@ def admin_delete_record(request):
     }
     
     return render(request, 'dance_school/admin_delete_record.html', context)
+
+def admin_add_record(request):
+    """Быстрое добавление записи через удобную форму"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    context = {
+        'user_info': user_info
+    }
+    
+    return render(request, 'dance_school/admin_add_record.html', context)
