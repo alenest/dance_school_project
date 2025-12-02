@@ -17,47 +17,83 @@
             min-height: 100vh;
             color: #333;
             line-height: 1.6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
-        .edit-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 800px;
-            margin: 20px;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         .header {
-            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
         }
         
         .header h1 {
             color: #4a5568;
             margin-bottom: 10px;
             font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .header p {
             color: #718096;
+            font-size: 1.1em;
         }
         
-        .table-info {
+        .edit-form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-info {
             background: #edf2f7;
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 30px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 1.1em;
         }
         
         .edit-form {
             display: flex;
             flex-direction: column;
+            gap: 25px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
         }
         
@@ -78,6 +114,7 @@
         .required::after {
             content: '*';
             color: #e53e3e;
+            margin-left: 3px;
         }
         
         .form-group input,
@@ -88,6 +125,7 @@
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            width: 100%;
         }
         
         .form-group input:focus,
@@ -95,23 +133,46 @@
         .form-group textarea:focus {
             outline: none;
             border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .form-group input[readonly],
+        .form-group select[disabled] {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            color: #718096;
+            cursor: not-allowed;
+        }
+        
+        .form-help {
+            font-size: 0.85em;
+            color: #718096;
+            margin-top: 5px;
         }
         
         .form-actions {
             display: flex;
             gap: 15px;
-            margin-top: 30px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
         }
         
         .btn {
             flex: 1;
-            padding: 15px;
+            padding: 15px 25px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn-primary {
@@ -122,6 +183,7 @@
         .btn-primary:hover {
             background: #3182ce;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
         }
         
         .btn-secondary {
@@ -144,198 +206,323 @@
             transform: translateY(-2px);
         }
         
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #4299e1;
-            text-decoration: none;
-            font-weight: 600;
+        .field-type {
+            font-size: 0.8em;
+            color: #a0aec0;
+            font-style: italic;
         }
         
-        .back-link:hover {
-            text-decoration: underline;
+        .error-message {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fc8181;
         }
         
-        .field-info {
-            font-size: 0.85em;
-            color: #718096;
-            margin-top: 5px;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-group input {
-            width: auto;
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #9ae6b4;
         }
         
         @media (max-width: 768px) {
-            .edit-container {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
                 padding: 20px;
-                margin: 10px;
+            }
+            
+            .edit-form-container {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
             }
             
             .form-actions {
                 flex-direction: column;
             }
+            
+            .form-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="edit-container">
+    <div class="container">
         <div class="header">
-            <h1>{% if action == 'add' %}➕ Добавить запись{% else %}✏️ Редактировать запись{% endif %}</h1>
-            <p>Таблица: <strong>{{ table }}</strong></p>
-        </div>
-        
-        <div class="table-info">
-            <p>ID записи: <strong>{% if record_id %}{{ record_id }}{% else %}Новая запись{% endif %}</strong></p>
-            <p>Тип операции: <strong>{% if action == 'add' %}Добавление{% else %}Редактирование{% endif %}</strong></p>
-        </div>
-        
-        <form method="post" class="edit-form">
-            {% csrf_token %}
-            <input type="hidden" name="table" value="{{ table }}">
-            <input type="hidden" name="action" value="{{ action }}">
-            
-            {% for column in table_structure %}
-            {% if column.0 not in ['schedule_id', 'registration_id'] or action == 'add' %}
-            <div class="form-group">
-                <label for="{{ column.0 }}" class="{% if column.2 == 'NO' %}required{% endif %}">
-                    {{ column.0|title }}
-                </label>
-                
-                {% if action == 'edit' and record_data %}
-                    {% with col_index=forloop.counter0 %}
-                        {% if column.1 in ['character varying', 'text'] %}
-                            <input type="text" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'' }}"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% elif column.1 == 'integer' %}
-                            <input type="number" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'0' }}"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% elif column.1 == 'numeric' %}
-                            <input type="number" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'0' }}"
-                                   step="0.01"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% elif column.1 == 'date' %}
-                            <input type="date" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'' }}"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% elif column.1 == 'time without time zone' %}
-                            <input type="time" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'' }}"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% elif column.0 == 'schedule_status_nesterovas_21_8' or column.0 == 'client_status_nesterovas_21_8' or column.0 == 'style_status_nesterovas_21_8' %}
-                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
-                                <option value="активно" {% if record_data|slice:col_index|last == 'активно' %}selected{% endif %}>активно</option>
-                                <option value="неактивно" {% if record_data|slice:col_index|last == 'неактивно' %}selected{% endif %}>неактивно</option>
-                            </select>
-                        {% elif column.0 == 'difficulty_level_nesterovas_21_8' %}
-                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
-                                <option value="начальный" {% if record_data|slice:col_index|last == 'начальный' %}selected{% endif %}>начальный</option>
-                                <option value="средний" {% if record_data|slice:col_index|last == 'средний' %}selected{% endif %}>средний</option>
-                                <option value="продвинутый" {% if record_data|slice:col_index|last == 'продвинутый' %}selected{% endif %}>продвинутый</option>
-                            </select>
-                        {% else %}
-                            <input type="text" 
-                                   id="{{ column.0 }}" 
-                                   name="{{ column.0 }}" 
-                                   value="{{ record_data|slice:col_index|last|default:'' }}"
-                                   {% if column.2 == 'NO' %}required{% endif %}>
-                        {% endif %}
-                    {% endwith %}
+            <h1>
+                {% if action == 'add' %}
+                    ➕ Добавить запись
                 {% else %}
-                    {% if column.1 in ['character varying', 'text'] %}
-                        <input type="text" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               {% if column.2 == 'NO' %}required{% endif %}
-                               placeholder="Введите значение">
-                    {% elif column.1 == 'integer' %}
-                        <input type="number" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               value="0"
-                               {% if column.2 == 'NO' %}required{% endif %}>
-                    {% elif column.1 == 'numeric' %}
-                        <input type="number" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               value="0"
-                               step="0.01"
-                               {% if column.2 == 'NO' %}required{% endif %}>
-                    {% elif column.1 == 'date' %}
-                        <input type="date" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               {% if column.2 == 'NO' %}required{% endif %}>
-                    {% elif column.1 == 'time without time zone' %}
-                        <input type="time" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               {% if column.2 == 'NO' %}required{% endif %}>
-                    {% elif column.0 == 'schedule_status_nesterovas_21_8' or column.0 == 'client_status_nesterovas_21_8' or column.0 == 'style_status_nesterovas_21_8' %}
-                        <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
-                            <option value="активно">активно</option>
-                            <option value="неактивно">неактивно</option>
-                        </select>
-                    {% elif column.0 == 'difficulty_level_nesterovas_21_8' %}
-                        <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
-                            <option value="начальный">начальный</option>
-                            <option value="средний">средний</option>
-                            <option value="продвинутый">продвинутый</option>
-                        </select>
-                    {% else %}
-                        <input type="text" 
-                               id="{{ column.0 }}" 
-                               name="{{ column.0 }}" 
-                               {% if column.2 == 'NO' %}required{% endif %}
-                               placeholder="Введите значение">
-                    {% endif %}
+                    ✏️ Редактировать запись
                 {% endif %}
-                
-                <div class="field-info">
-                    Тип: {{ column.1 }} | 
-                    Обязательное: {% if column.2 == 'NO' %}Да{% else %}Нет{% endif %}
+            </h1>
+            <p>Таблица: <strong>{{ table_display }}</strong></p>
+        </div>
+        
+        <div class="edit-form-container">
+            <div class="form-info">
+                <div class="info-item">
+                    <span class="info-label">Таблица</span>
+                    <span class="info-value">{{ table_display }} ({{ table_name }})</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Операция</span>
+                    <span class="info-value">
+                        {% if action == 'add' %}
+                            Добавление новой записи
+                        {% else %}
+                            Редактирование записи #{{ record_id }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Колонок</span>
+                    <span class="info-value">{{ table_structure|length }}</span>
                 </div>
             </div>
-            {% endif %}
-            {% endfor %}
             
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    {% if action == 'add' %}➕ Создать запись{% else %}💾 Сохранить изменения{% endif %}
-                </button>
-                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">↩️ Отмена</a>
-                
-                {% if action == 'edit' and record_id %}
-                <a href="{% url 'admin_delete_record' %}?table={{ table }}&id={{ record_id }}" 
-                   class="btn btn-danger"
-                   onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
-                    🗑️ Удалить
-                </a>
-                {% endif %}
+            {% if error_message %}
+            <div class="error-message">
+                <strong>Ошибка:</strong> {{ error_message }}
             </div>
-        </form>
-        
-        <a href="{% url 'admin_dashboard' %}" class="back-link">← Вернуться в админ панель</a>
+            {% endif %}
+            
+            <form method="post" class="edit-form">
+                {% csrf_token %}
+                <input type="hidden" name="table" value="{{ table_name }}">
+                
+                <div class="form-row">
+                    {% for column in table_structure %}
+                    <div class="form-group">
+                        <label for="{{ column.0 }}" class="{% if column.2 == 'NO' and not column.3 %}required{% endif %}">
+                            {{ column.0|title }}
+                            <span class="field-type">({{ column.1 }})</span>
+                        </label>
+                        
+                        {% if column.0 in ['schedule_id', 'registration_id', 'client_id', 'trainer_id', 'dance_style_id'] and column.3 %}
+                            <!-- Автоинкрементные поля - только для чтения при редактировании -->
+                            {% if action == 'edit' and record %}
+                                {% with col_index=forloop.counter0 %}
+                                <input type="text" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="{{ record|slice:col_index|last|default:'' }}"
+                                       readonly
+                                       class="readonly-field">
+                                {% endwith %}
+                            {% else %}
+                                <input type="text" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value=""
+                                       placeholder="Автоматически"
+                                       readonly
+                                       class="readonly-field">
+                            {% endif %}
+                            <div class="form-help">Заполняется автоматически</div>
+                        
+                        {% elif column.1 == 'boolean' %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% if action == 'edit' and record %}
+                                    {% with col_index=forloop.counter0 %}
+                                    <option value="true" {% if record|slice:col_index|last %}selected{% endif %}>Да</option>
+                                    <option value="false" {% if not record|slice:col_index|last %}selected{% endif %}>Нет</option>
+                                    {% endwith %}
+                                {% else %}
+                                    <option value="true">Да</option>
+                                    <option value="false">Нет</option>
+                                {% endif %}
+                            </select>
+                        
+                        {% elif 'date' in column.1 %}
+                            {% if action == 'edit' and record %}
+                                {% with col_index=forloop.counter0 %}
+                                <input type="date" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="{{ record|slice:col_index|last|date:'Y-m-d' }}"
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% endwith %}
+                            {% else %}
+                                <input type="date" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                            {% endif %}
+                        
+                        {% elif 'time' in column.1 %}
+                            {% if action == 'edit' and record %}
+                                {% with col_index=forloop.counter0 %}
+                                <input type="time" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="{{ record|slice:col_index|last|time:'H:i' }}"
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% endwith %}
+                            {% else %}
+                                <input type="time" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                            {% endif %}
+                        
+                        {% elif column.1 in ['integer', 'numeric'] %}
+                            {% if action == 'edit' and record %}
+                                {% with col_index=forloop.counter0 %}
+                                <input type="number" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="{{ record|slice:col_index|last|default:'0' }}"
+                                       step="{% if 'numeric' in column.1 %}0.01{% else %}1{% endif %}"
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% endwith %}
+                            {% else %}
+                                <input type="number" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="0"
+                                       step="{% if 'numeric' in column.1 %}0.01{% else %}1{% endif %}"
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                            {% endif %}
+                        
+                        {% elif column.0 in ['schedule_status_nesterovas_21_8', 'client_status_nesterovas_21_8', 'style_status_nesterovas_21_8'] %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% if action == 'edit' and record %}
+                                    {% with col_index=forloop.counter0 %}
+                                    <option value="активно" {% if record|slice:col_index|last == 'активно' %}selected{% endif %}>активно</option>
+                                    <option value="неактивно" {% if record|slice:col_index|last == 'неактивно' %}selected{% endif %}>неактивно</option>
+                                    {% endwith %}
+                                {% else %}
+                                    <option value="активно">активно</option>
+                                    <option value="неактивно">неактивно</option>
+                                {% endif %}
+                            </select>
+                        
+                        {% elif column.0 == 'difficulty_level_nesterovas_21_8' %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% if action == 'edit' and record %}
+                                    {% with col_index=forloop.counter0 %}
+                                    <option value="начальный" {% if record|slice:col_index|last == 'начальный' %}selected{% endif %}>начальный</option>
+                                    <option value="средний" {% if record|slice:col_index|last == 'средний' %}selected{% endif %}>средний</option>
+                                    <option value="продвинутый" {% if record|slice:col_index|last == 'продвинутый' %}selected{% endif %}>продвинутый</option>
+                                    {% endwith %}
+                                {% else %}
+                                    <option value="начальный">начальный</option>
+                                    <option value="средний">средний</option>
+                                    <option value="продвинутый">продвинутый</option>
+                                {% endif %}
+                            </select>
+                        
+                        {% elif column.0 == 'class_weekday_nesterovas_21_8' %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% if action == 'edit' and record %}
+                                    {% with col_index=forloop.counter0 %}
+                                    <option value="Понедельник" {% if record|slice:col_index|last == 'Понедельник' %}selected{% endif %}>Понедельник</option>
+                                    <option value="Вторник" {% if record|slice:col_index|last == 'Вторник' %}selected{% endif %}>Вторник</option>
+                                    <option value="Среда" {% if record|slice:col_index|last == 'Среда' %}selected{% endif %}>Среда</option>
+                                    <option value="Четверг" {% if record|slice:col_index|last == 'Четверг' %}selected{% endif %}>Четверг</option>
+                                    <option value="Пятница" {% if record|slice:col_index|last == 'Пятница' %}selected{% endif %}>Пятница</option>
+                                    <option value="Суббота" {% if record|slice:col_index|last == 'Суббота' %}selected{% endif %}>Суббота</option>
+                                    <option value="Воскресенье" {% if record|slice:col_index|last == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
+                                    {% endwith %}
+                                {% else %}
+                                    <option value="Понедельник">Понедельник</option>
+                                    <option value="Вторник">Вторник</option>
+                                    <option value="Среда">Среда</option>
+                                    <option value="Четверг">Четверг</option>
+                                    <option value="Пятница">Пятница</option>
+                                    <option value="Суббота">Суббота</option>
+                                    <option value="Воскресенье">Воскресенье</option>
+                                {% endif %}
+                            </select>
+                        
+                        {% else %}
+                            {% if action == 'edit' and record %}
+                                {% with col_index=forloop.counter0 %}
+                                <input type="text" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       value="{{ record|slice:col_index|last|default:'' }}"
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                                {% endwith %}
+                            {% else %}
+                                <input type="text" 
+                                       id="{{ column.0 }}" 
+                                       name="{{ column.0 }}" 
+                                       placeholder="Введите значение..."
+                                       {% if column.2 == 'NO' and not column.3 %}required{% endif %}>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <div class="form-help">
+                            {% if column.2 == 'NO' and not column.3 %}
+                                Обязательное поле
+                            {% else %}
+                                Необязательное поле
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {% if action == 'add' %}
+                            ➕ Создать запись
+                        {% else %}
+                            💾 Сохранить изменения
+                        {% endif %}
+                    </button>
+                    
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                        ↩️ Отмена
+                    </a>
+                    
+                    {% if action == 'edit' %}
+                    <a href="{% url 'admin_delete_record' %}?table={{ table_name }}&id={{ record_id }}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
+                        🗑️ Удалить
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
     </div>
+
+    <script>
+        // Автоматическая установка сегодняшней даты для полей с датой
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateFields = document.querySelectorAll('input[type="date"]');
+            dateFields.forEach(field => {
+                if (!field.value) {
+                    field.value = new Date().toISOString().split('T')[0];
+                }
+            });
+            
+            // Автоматическая установка текущего времени для полей с временем
+            const timeFields = document.querySelectorAll('input[type="time"]');
+            timeFields.forEach(field => {
+                if (!field.value) {
+                    const now = new Date();
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    field.value = `${hours}:${minutes}`;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

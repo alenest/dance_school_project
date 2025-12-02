@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подтверждение удаления</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .confirm-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #e53e3e;
+            margin-bottom: 10px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+        
+        .warning-box {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .warning-box h3 {
+            color: #742a2a;
+            margin-bottom: 10px;
+        }
+        
+        .info-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .info-label {
+            color: #718096;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            color: #4a5568;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #a0aec0;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #718096;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .confirm-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="confirm-container">
+        <div class="header">
+            <h1>⚠️ Подтверждение удаления</h1>
+            <p>Вы собираетесь удалить запись из базы данных</p>
+        </div>
+        
+        <div class="warning-box">
+            <h3>Внимание!</h3>
+            <p>Это действие нельзя отменить. Запись будет удалена безвозвратно.</p>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label">Таблица:</span>
+                <span class="info-value">{{ table }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">ID записи:</span>
+                <span class="info-value">{{ record_id }}</span>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="table" value="{{ table }}">
+            <input type="hidden" name="id" value="{{ record_id }}">
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    🗑️ Да, удалить запись
+                </button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                    ↩️ Отмена, вернуться назад
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

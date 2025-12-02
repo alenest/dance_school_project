@@ -1,7 +1,7 @@
 import psycopg2
 from django.conf import settings
 import traceback
-from datetime import datetime
+from datetime import datetime, date, time
 import json
 
 class DatabaseService:
@@ -37,6 +37,8 @@ class DatabaseService:
         finally:
             cur.close()
             conn.close()
+    
+    # ========== МЕТОДЫ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ ==========
     
     @staticmethod
     def get_all_active_schedules():
@@ -118,7 +120,6 @@ class DatabaseService:
             else:
                 result = DatabaseService.execute_query(base_query)
             
-            print(f"Найдено расписаний: {len(result) if result else 0}")
             return result
                 
         except Exception as e:
@@ -187,6 +188,29 @@ class DatabaseService:
         return None
     
     @staticmethod
+    def calculate_discount(base_price, client_age, registration_count):
+        """Функция расчета скидки"""
+        try:
+            discount = 0
+            if client_age < 25:
+                discount += 5
+            elif client_age > 50:
+                discount += 10
+            
+            if registration_count > 5:
+                discount += 15
+            elif registration_count > 3:
+                discount += 10
+            
+            final_price = base_price * (1 - discount / 100)
+            return round(final_price, 2)
+        except Exception as e:
+            print(f"Error in calculate_discount: {e}")
+            return float(base_price)
+    
+    # ========== МЕТОДЫ ДЛЯ ТРЕНЕРСКОЙ ПАНЕЛИ ==========
+    
+    @staticmethod
     def get_trainer_schedules(trainer_id):
         """Получить расписания тренера"""
         query = """
@@ -253,113 +277,110 @@ class DatabaseService:
         except:
             return 0
     
-    # Методы для администраторов
+    # ========== МЕТОДЫ ДЛЯ АДМИН-ПАНЕЛИ - ПОЛНЫЙ ФУНКЦИОНАЛ ==========
+    
     @staticmethod
     def get_all_clients():
-        query = """
-        SELECT client_id, contact_phone_nesterovas_21_8, client_full_name_nesterovas_21_8, 
-               TO_CHAR(client_birth_date_nesterovas_21_8, 'YYYY-MM-DD'), 
-               contact_email_nesterovas_21_8, parent_guardian_name_nesterovas_21_8, 
-               client_status_nesterovas_21_8
-        FROM clients_nesterovas_21_8 
-        ORDER BY client_id
-        """
-        return DatabaseService.execute_query(query)
+        """Получить всех клиентов"""
+        return DatabaseService.execute_query("""
+            SELECT client_id, contact_phone_nesterovas_21_8, client_full_name_nesterovas_21_8, 
+                   client_birth_date_nesterovas_21_8, contact_email_nesterovas_21_8, 
+                   parent_guardian_name_nesterovas_21_8, client_status_nesterovas_21_8
+            FROM clients_nesterovas_21_8 
+            ORDER BY client_id
+        """)
     
     @staticmethod
     def get_all_trainers():
-        query = """
-        SELECT trainer_id, trainer_phone_nesterovas_21_8, trainer_full_name_nesterovas_21_8, trainer_email_nesterovas_21_8
-        FROM trainers_nesterovas_21_8 
-        ORDER BY trainer_id
-        """
-        return DatabaseService.execute_query(query)
+        """Получить всех тренеров"""
+        return DatabaseService.execute_query("""
+            SELECT trainer_id, trainer_phone_nesterovas_21_8, trainer_full_name_nesterovas_21_8, trainer_email_nesterovas_21_8
+            FROM trainers_nesterovas_21_8 
+            ORDER BY trainer_id
+        """)
     
     @staticmethod
     def get_all_dance_styles():
-        query = """
-        SELECT dance_style_id, dance_style_name_nesterovas_21_8, difficulty_level_nesterovas_21_8, 
-               target_age_group_nesterovas_21_8, style_status_nesterovas_21_8
-        FROM dance_styles_nesterovas_21_8 
-        ORDER BY dance_style_id
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все направления танцев"""
+        return DatabaseService.execute_query("""
+            SELECT dance_style_id, dance_style_name_nesterovas_21_8, difficulty_level_nesterovas_21_8, 
+                   target_age_group_nesterovas_21_8, style_status_nesterovas_21_8
+            FROM dance_styles_nesterovas_21_8 
+            ORDER BY dance_style_id
+        """)
     
     @staticmethod
     def get_all_halls():
-        query = """
-        SELECT hall_number_nesterovas_21_8, hall_capacity_nesterovas_21_8
-        FROM halls_nesterovas_21_8 
-        ORDER BY hall_number_nesterovas_21_8
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все залы"""
+        return DatabaseService.execute_query("""
+            SELECT hall_number_nesterovas_21_8, hall_capacity_nesterovas_21_8
+            FROM halls_nesterovas_21_8 
+            ORDER BY hall_number_nesterovas_21_8
+        """)
     
     @staticmethod
     def get_all_schedules():
-        query = """
-        SELECT s.schedule_id, s.trainer_id, s.class_weekday_nesterovas_21_8, 
-               TO_CHAR(s.period_start_date_nesterovas_21_8, 'YYYY-MM-DD'), 
-               TO_CHAR(s.class_start_time_nesterovas_21_8, 'HH24:MI'), 
-               s.hall_number_nesterovas_21_8, s.dance_style_id, s.subscription_price_nesterovas_21_8, 
-               s.schedule_status_nesterovas_21_8,
-               t.trainer_full_name_nesterovas_21_8, 
-               d.dance_style_name_nesterovas_21_8
-        FROM schedules_nesterovas_21_8 s
-        JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
-        JOIN dance_styles_nesterovas_21_8 d ON s.dance_style_id = d.dance_style_id
-        ORDER BY s.schedule_id
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все расписания"""
+        return DatabaseService.execute_query("""
+            SELECT s.schedule_id, s.trainer_id, s.class_weekday_nesterovas_21_8, 
+                   s.period_start_date_nesterovas_21_8, s.class_start_time_nesterovas_21_8, 
+                   s.hall_number_nesterovas_21_8, s.dance_style_id, s.subscription_price_nesterovas_21_8, 
+                   s.schedule_status_nesterovas_21_8,
+                   t.trainer_full_name_nesterovas_21_8, 
+                   d.dance_style_name_nesterovas_21_8
+            FROM schedules_nesterovas_21_8 s
+            JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
+            JOIN dance_styles_nesterovas_21_8 d ON s.dance_style_id = d.dance_style_id
+            ORDER BY s.schedule_id
+        """)
     
     @staticmethod
     def get_all_registrations():
-        query = """
-        SELECT r.registration_id, r.client_id, r.schedule_id, 
-               TO_CHAR(r.registration_datetime_nesterovas_21_8, 'YYYY-MM-DD HH24:MI'), 
-               r.admin_username_nesterovas_21_8,
-               c.client_full_name_nesterovas_21_8
-        FROM registrations_nesterovas_21_8 r
-        JOIN clients_nesterovas_21_8 c ON r.client_id = c.client_id
-        ORDER BY r.registration_id
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все регистрации"""
+        return DatabaseService.execute_query("""
+            SELECT r.registration_id, r.client_id, r.schedule_id, 
+                   r.registration_datetime_nesterovas_21_8, 
+                   r.admin_username_nesterovas_21_8,
+                   c.client_full_name_nesterovas_21_8
+            FROM registrations_nesterovas_21_8 r
+            JOIN clients_nesterovas_21_8 c ON r.client_id = c.client_id
+            ORDER BY r.registration_id
+        """)
     
     @staticmethod
     def get_all_administrators():
-        query = """
-        SELECT admin_username_nesterovas_21_8, admin_full_name_nesterovas_21_8, 
-               admin_position_nesterovas_21_8, admin_phone_nesterovas_21_8, 
-               admin_password_hash_nesterovas_21_8
-        FROM administrators_nesterovas_21_8 
-        ORDER BY admin_username_nesterovas_21_8
-        """
-        return DatabaseService.execute_query(query)
+        """Получить всех администраторов"""
+        return DatabaseService.execute_query("""
+            SELECT admin_username_nesterovas_21_8, admin_full_name_nesterovas_21_8, 
+                   admin_position_nesterovas_21_8, admin_phone_nesterovas_21_8, 
+                   admin_password_hash_nesterovas_21_8
+            FROM administrators_nesterovas_21_8 
+            ORDER BY admin_username_nesterovas_21_8
+        """)
     
     @staticmethod
     def get_all_training_periods():
-        query = """
-        SELECT TO_CHAR(period_start_date_nesterovas_21_8, 'YYYY-MM-DD'), 
-               TO_CHAR(period_end_date_nesterovas_21_8, 'YYYY-MM-DD')
-        FROM training_periods_nesterovas_21_8 
-        ORDER BY period_start_date_nesterovas_21_8
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все периоды занятий"""
+        return DatabaseService.execute_query("""
+            SELECT period_start_date_nesterovas_21_8, period_end_date_nesterovas_21_8
+            FROM training_periods_nesterovas_21_8 
+            ORDER BY period_start_date_nesterovas_21_8
+        """)
     
     @staticmethod
     def get_all_training_slots():
-        query = """
-        SELECT TO_CHAR(class_start_time_nesterovas_21_8, 'HH24:MI'), 
-               TO_CHAR(class_end_time_nesterovas_21_8, 'HH24:MI')
-        FROM training_slots_nesterovas_21_8 
-        ORDER BY class_start_time_nesterovas_21_8
-        """
-        return DatabaseService.execute_query(query)
+        """Получить все временные слоты"""
+        return DatabaseService.execute_query("""
+            SELECT class_start_time_nesterovas_21_8, class_end_time_nesterovas_21_8
+            FROM training_slots_nesterovas_21_8 
+            ORDER BY class_start_time_nesterovas_21_8
+        """)
     
     @staticmethod
     def get_table_structure(table_name):
-        """Получить структуру таблицы"""
+        """Получить структуру таблицы (столбцы, типы данных, обязательность)"""
         query = """
-        SELECT column_name, data_type, is_nullable
+        SELECT column_name, data_type, is_nullable, column_default
         FROM information_schema.columns
         WHERE table_name = %s
         ORDER BY ordinal_position
@@ -368,9 +389,9 @@ class DatabaseService:
     
     @staticmethod
     def get_record_by_id(table_name, record_id):
-        """Получить запись по ID"""
+        """Получить конкретную запись по ID"""
         # Определяем primary key для таблицы
-        pk_column = {
+        pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
             'trainers_nesterovas_21_8': 'trainer_id',
             'dance_styles_nesterovas_21_8': 'dance_style_id',
@@ -380,16 +401,20 @@ class DatabaseService:
             'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
             'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
             'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }.get(table_name, 'id')
+        }
+        
+        pk_column = pk_columns.get(table_name)
+        if not pk_column:
+            raise ValueError(f"Неизвестная таблица: {table_name}")
         
         query = f"SELECT * FROM {table_name} WHERE {pk_column} = %s"
         return DatabaseService.execute_query(query, [record_id])
     
     @staticmethod
     def update_record(table_name, record_id, form_data):
-        """Обновить запись в таблице"""
+        """Обновить существующую запись в таблице"""
         # Определяем primary key для таблицы
-        pk_column = {
+        pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
             'trainers_nesterovas_21_8': 'trainer_id',
             'dance_styles_nesterovas_21_8': 'dance_style_id',
@@ -399,19 +424,19 @@ class DatabaseService:
             'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
             'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
             'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }.get(table_name, 'id')
+        }
         
-        # Создаем SET часть запроса
+        pk_column = pk_columns.get(table_name)
+        if not pk_column:
+            raise ValueError(f"Неизвестная таблица: {table_name}")
+        
+        # Собираем SET часть запроса
         set_parts = []
         values = []
         
         for key, value in form_data.items():
-            if key != pk_column and value != '':
-                # Обрабатываем списки значений из формы
-                if isinstance(value, list):
-                    value = value[0]
-                
-                # Проверяем тип данных для правильного форматирования
+            if key != pk_column and value is not None and value != '':
+                # Преобразуем значения в нужные типы
                 if 'date' in key.lower():
                     set_parts.append(f"{key} = %s::date")
                     values.append(value)
@@ -420,7 +445,10 @@ class DatabaseService:
                     values.append(value)
                 elif 'price' in key.lower() or 'capacity' in key.lower():
                     set_parts.append(f"{key} = %s::numeric")
-                    values.append(value)
+                    values.append(float(value) if value else 0)
+                elif 'id' in key.lower() or 'number' in key.lower():
+                    set_parts.append(f"{key} = %s::integer")
+                    values.append(int(value) if value else 0)
                 else:
                     set_parts.append(f"{key} = %s")
                     values.append(value)
@@ -437,8 +465,8 @@ class DatabaseService:
     @staticmethod
     def insert_record(table_name, form_data):
         """Добавить новую запись в таблицу"""
-        # Определяем primary key для таблицы
-        pk_column = {
+        # Определяем primary key для таблицы (если она SERIAL, то не включаем в INSERT)
+        pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
             'trainers_nesterovas_21_8': 'trainer_id',
             'dance_styles_nesterovas_21_8': 'dance_style_id',
@@ -448,38 +476,40 @@ class DatabaseService:
             'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
             'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
             'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }.get(table_name, 'id')
+        }
         
-        # Убираем pk_column из данных, если она есть (будет сгенерирована автоматически для SERIAL)
-        if pk_column in form_data and 'serial' in table_name.lower():
-            del form_data[pk_column]
+        pk_column = pk_columns.get(table_name)
         
-        # Создаем INSERT запрос
+        # Собираем данные для INSERT
         columns = []
         placeholders = []
         values = []
         
         for key, value in form_data.items():
-            if value != '':
-                # Обрабатываем списки значений из формы
-                if isinstance(value, list):
-                    value = value[0]
+            if value is not None and value != '':
+                # Пропускаем primary key, если он SERIAL
+                if key == pk_column and table_name in ['clients_nesterovas_21_8', 'trainers_nesterovas_21_8', 
+                                                      'dance_styles_nesterovas_21_8', 'schedules_nesterovas_21_8',
+                                                      'registrations_nesterovas_21_8']:
+                    continue
                 
                 columns.append(key)
                 placeholders.append("%s")
                 
-                # Проверяем тип данных для правильного форматирования
+                # Преобразуем значения в нужные типы
                 if 'date' in key.lower():
                     values.append(value)
                 elif 'time' in key.lower():
                     values.append(value)
                 elif 'price' in key.lower() or 'capacity' in key.lower():
                     values.append(float(value) if value else 0)
+                elif 'id' in key.lower() or 'number' in key.lower():
+                    values.append(int(value) if value else 0)
                 else:
                     values.append(value)
         
         if not columns:
-            return
+            raise ValueError("Нет данных для вставки")
         
         columns_clause = ", ".join(columns)
         placeholders_clause = ", ".join(placeholders)
@@ -491,7 +521,7 @@ class DatabaseService:
     def delete_record(table_name, record_id):
         """Удалить запись из таблицы"""
         # Определяем primary key для таблицы
-        pk_column = {
+        pk_columns = {
             'clients_nesterovas_21_8': 'client_id',
             'trainers_nesterovas_21_8': 'trainer_id',
             'dance_styles_nesterovas_21_8': 'dance_style_id',
@@ -501,28 +531,11 @@ class DatabaseService:
             'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
             'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
             'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }.get(table_name, 'id')
+        }
+        
+        pk_column = pk_columns.get(table_name)
+        if not pk_column:
+            raise ValueError(f"Неизвестная таблица: {table_name}")
         
         query = f"DELETE FROM {table_name} WHERE {pk_column} = %s"
         DatabaseService.execute_query(query, [record_id], fetch=False)
-    
-    @staticmethod
-    def calculate_discount(base_price, client_age, registration_count):
-        """Функция расчета скидки"""
-        try:
-            discount = 0
-            if client_age < 25:
-                discount += 5
-            elif client_age > 50:
-                discount += 10
-            
-            if registration_count > 5:
-                discount += 15
-            elif registration_count > 3:
-                discount += 10
-            
-            final_price = base_price * (1 - discount / 100)
-            return round(final_price, 2)
-        except Exception as e:
-            print(f"Error in calculate_discount: {e}")
-            return float(base_price)

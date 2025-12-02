@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
 import json
 from .services.database_service import DatabaseService
 
@@ -294,7 +294,7 @@ def trainer_edit_schedule(request, schedule_id):
         return HttpResponse(f"Ошибка: {e}")
 
 def admin_dashboard(request):
-    """Админ панель с функциями ТЗ"""
+    """Админ панель с полным функционалом управления ВСЕМИ таблицами"""
     user_cookie = request.COOKIES.get('user_info')
     if not user_cookie:
         return redirect('home')
@@ -306,55 +306,128 @@ def admin_dashboard(request):
     except:
         return redirect('home')
     
-    action = request.GET.get('action', '')
-    table = request.GET.get('table', '')
-    id_to_edit = request.GET.get('id', '')
-    
-    # Обработка добавления/редактирования/удаления
-    if request.method == 'POST':
+    # Обработка удаления записи
+    if request.method == 'POST' and 'delete_record' in request.POST:
         try:
-            table_name = request.POST.get('table_name')
-            action = request.POST.get('action')
+            table = request.POST.get('table')
             record_id = request.POST.get('record_id')
-            
-            if action == 'delete':
-                DatabaseService.delete_record(table_name, record_id)
-            elif action == 'edit':
-                # Сохраняем данные формы в сессии для редактирования
-                request.session['edit_data'] = {
-                    'table': table_name,
-                    'id': record_id,
-                    'form_data': request.POST
-                }
-            elif action == 'save':
-                # Сохраняем изменения
-                form_data = dict(request.POST)
-                DatabaseService.update_record(table_name, record_id, form_data)
-            
+            DatabaseService.delete_record(table, record_id)
             return redirect('admin_dashboard')
         except Exception as e:
-            return HttpResponse(f"Ошибка обработки: {e}")
+            return HttpResponse(f"Ошибка удаления: {e}")
     
-    # Получаем все данные для админ панели
+    # Получаем ВСЕ данные из ВСЕХ таблиц для админ панели
     try:
-        clients = DatabaseService.get_all_clients()
-        trainers = DatabaseService.get_all_trainers()
-        dance_styles = DatabaseService.get_all_dance_styles()
-        halls = DatabaseService.get_all_halls()
-        schedules = DatabaseService.get_all_schedules()
-        registrations = DatabaseService.get_all_registrations()
-        administrators = DatabaseService.get_all_administrators()
-        training_periods = DatabaseService.get_all_training_periods()
-        training_slots = DatabaseService.get_all_training_slots()
+        # Получаем данные из всех таблиц
+        clients_data = DatabaseService.get_all_clients()
+        trainers_data = DatabaseService.get_all_trainers()
+        dance_styles_data = DatabaseService.get_all_dance_styles()
+        halls_data = DatabaseService.get_all_halls()
+        schedules_data = DatabaseService.get_all_schedules()
+        registrations_data = DatabaseService.get_all_registrations()
+        administrators_data = DatabaseService.get_all_administrators()
+        training_periods_data = DatabaseService.get_all_training_periods()
+        training_slots_data = DatabaseService.get_all_training_slots()
+        
+        # Форматируем данные для удобного отображения
+        clients = []
+        for client in clients_data:
+            clients.append({
+                'id': client[0],
+                'phone': client[1],
+                'full_name': client[2],
+                'birth_date': client[3],
+                'email': client[4],
+                'parent_name': client[5],
+                'status': client[6]
+            })
+        
+        trainers = []
+        for trainer in trainers_data:
+            trainers.append({
+                'id': trainer[0],
+                'phone': trainer[1],
+                'full_name': trainer[2],
+                'email': trainer[3]
+            })
+        
+        dance_styles = []
+        for style in dance_styles_data:
+            dance_styles.append({
+                'id': style[0],
+                'name': style[1],
+                'difficulty': style[2],
+                'age_group': style[3],
+                'status': style[4]
+            })
+        
+        halls = []
+        for hall in halls_data:
+            halls.append({
+                'number': hall[0],
+                'capacity': hall[1]
+            })
+        
+        schedules = []
+        for schedule in schedules_data:
+            schedules.append({
+                'id': schedule[0],
+                'trainer_id': schedule[1],
+                'weekday': schedule[2],
+                'period_start': schedule[3],
+                'start_time': schedule[4],
+                'hall': schedule[5],
+                'style_id': schedule[6],
+                'price': schedule[7],
+                'status': schedule[8],
+                'trainer_name': schedule[9],
+                'style_name': schedule[10]
+            })
+        
+        registrations = []
+        for reg in registrations_data:
+            registrations.append({
+                'id': reg[0],
+                'client_id': reg[1],
+                'schedule_id': reg[2],
+                'datetime': reg[3],
+                'admin_username': reg[4],
+                'client_name': reg[5]
+            })
+        
+        administrators = []
+        for admin in administrators_data:
+            administrators.append({
+                'username': admin[0],
+                'full_name': admin[1],
+                'position': admin[2],
+                'phone': admin[3],
+                'password': admin[4]
+            })
+        
+        training_periods = []
+        for period in training_periods_data:
+            training_periods.append({
+                'start_date': period[0],
+                'end_date': period[1]
+            })
+        
+        training_slots = []
+        for slot in training_slots_data:
+            training_slots.append({
+                'start_time': slot[0],
+                'end_time': slot[1]
+            })
         
         # Статистика
         total_clients = len(clients)
         total_trainers = len(trainers)
         total_classes = len(schedules)
-        active_classes = len([s for s in schedules if s[8] == 'активно'])
+        active_classes = len([s for s in schedules if s['status'] == 'активно'])
         
         context = {
             'user_info': user_info,
+            # Все данные для отображения
             'clients': clients,
             'trainers': trainers,
             'dance_styles': dance_styles,
@@ -364,23 +437,34 @@ def admin_dashboard(request):
             'administrators': administrators,
             'training_periods': training_periods,
             'training_slots': training_slots,
+            # Статистика
             'total_clients': total_clients,
             'total_trainers': total_trainers,
             'total_classes': total_classes,
             'active_classes': active_classes,
-            'action': action,
-            'table': table,
-            'id_to_edit': id_to_edit
+            # Список всех таблиц для навигации
+            'all_tables': [
+                {'name': 'clients_nesterovas_21_8', 'display': 'Клиенты', 'data': clients},
+                {'name': 'trainers_nesterovas_21_8', 'display': 'Тренеры', 'data': trainers},
+                {'name': 'dance_styles_nesterovas_21_8', 'display': 'Направления танцев', 'data': dance_styles},
+                {'name': 'halls_nesterovas_21_8', 'display': 'Залы', 'data': halls},
+                {'name': 'schedules_nesterovas_21_8', 'display': 'Расписания', 'data': schedules},
+                {'name': 'registrations_nesterovas_21_8', 'display': 'Регистрации', 'data': registrations},
+                {'name': 'administrators_nesterovas_21_8', 'display': 'Администраторы', 'data': administrators},
+                {'name': 'training_periods_nesterovas_21_8', 'display': 'Периоды занятий', 'data': training_periods},
+                {'name': 'training_slots_nesterovas_21_8', 'display': 'Временные слоты', 'data': training_slots},
+            ]
         }
         
         return render(request, 'dance_school/admin_dashboard.html', context)
     
     except Exception as e:
-        print(f"Ошибка загрузки данных: {e}")
-        return HttpResponse(f"Ошибка загрузки данных: {e}")
+        print(f"Ошибка загрузки данных: {str(e)}")
+        traceback.print_exc()
+        return HttpResponse(f"Ошибка загрузки данных: {str(e)}")
 
 def admin_edit_record(request):
-    """Редактирование записи в админ панели"""
+    """Редактирование существующей записи в админ панели"""
     user_cookie = request.COOKIES.get('user_info')
     if not user_cookie:
         return redirect('home')
@@ -392,44 +476,127 @@ def admin_edit_record(request):
     except:
         return redirect('home')
     
-    table = request.GET.get('table', '')
+    table_name = request.GET.get('table', '')
     record_id = request.GET.get('id', '')
-    action = request.GET.get('action', 'edit')
+    
+    if not table_name or not record_id:
+        return HttpResponse("Не указана таблица или ID записи")
     
     if request.method == 'POST':
         try:
-            form_data = {k: v for k, v in request.POST.items() if k not in ['csrfmiddlewaretoken', 'table', 'action']}
+            # Собираем данные из формы
+            form_data = {}
+            for key, value in request.POST.items():
+                if key not in ['csrfmiddlewaretoken', 'table', 'id']:
+                    form_data[key] = value
             
-            if action == 'add':
-                DatabaseService.insert_record(table, form_data)
-            elif action == 'edit':
-                DatabaseService.update_record(table, record_id, form_data)
-            
+            # Обновляем запись
+            DatabaseService.update_record(table_name, record_id, form_data)
             return redirect('admin_dashboard')
         except Exception as e:
-            return HttpResponse(f"Ошибка сохранения: {e}")
+            return HttpResponse(f"Ошибка обновления: {str(e)}")
     
-    # Получаем структуру таблицы и данные записи
     try:
-        table_structure = DatabaseService.get_table_structure(table)
-        record_data = None
+        # Получаем структуру таблицы
+        table_structure = DatabaseService.get_table_structure(table_name)
         
-        if record_id and action == 'edit':
-            record_data = DatabaseService.get_record_by_id(table, record_id)
+        # Получаем данные записи
+        record = DatabaseService.get_record_by_id(table_name, record_id)
+        
+        if not record:
+            return HttpResponse("Запись не найдена")
+        
+        # Определяем friendly-имена для таблиц
+        table_display_names = {
+            'clients_nesterovas_21_8': 'Клиенты',
+            'trainers_nesterovas_21_8': 'Тренеры',
+            'dance_styles_nesterovas_21_8': 'Направления танцев',
+            'halls_nesterovas_21_8': 'Залы',
+            'schedules_nesterovas_21_8': 'Расписания',
+            'registrations_nesterovas_21_8': 'Регистрации',
+            'administrators_nesterovas_21_8': 'Администраторы',
+            'training_periods_nesterovas_21_8': 'Периоды занятий',
+            'training_slots_nesterovas_21_8': 'Временные слоты'
+        }
         
         context = {
             'user_info': user_info,
-            'table': table,
+            'table_name': table_name,
+            'table_display': table_display_names.get(table_name, table_name),
             'record_id': record_id,
-            'action': action,
+            'record': record[0] if record else None,
             'table_structure': table_structure,
-            'record_data': record_data[0] if record_data else None
+            'action': 'edit'
         }
         
         return render(request, 'dance_school/admin_edit_record.html', context)
     
     except Exception as e:
-        return HttpResponse(f"Ошибка загрузки формы: {e}")
+        print(f"Ошибка загрузки формы: {str(e)}")
+        return HttpResponse(f"Ошибка загрузки формы: {str(e)}")
+
+def admin_add_record(request):
+    """Добавление новой записи в админ панели"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    table_name = request.GET.get('table', '')
+    
+    if not table_name:
+        return HttpResponse("Не указана таблица")
+    
+    if request.method == 'POST':
+        try:
+            # Собираем данные из формы
+            form_data = {}
+            for key, value in request.POST.items():
+                if key not in ['csrfmiddlewaretoken', 'table']:
+                    form_data[key] = value
+            
+            # Добавляем запись
+            DatabaseService.insert_record(table_name, form_data)
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка добавления: {str(e)}")
+    
+    try:
+        # Получаем структуру таблицы
+        table_structure = DatabaseService.get_table_structure(table_name)
+        
+        # Определяем friendly-имена для таблиц
+        table_display_names = {
+            'clients_nesterovas_21_8': 'Клиенты',
+            'trainers_nesterovas_21_8': 'Тренеры',
+            'dance_styles_nesterovas_21_8': 'Направления танцев',
+            'halls_nesterovas_21_8': 'Залы',
+            'schedules_nesterovas_21_8': 'Расписания',
+            'registrations_nesterovas_21_8': 'Регистрации',
+            'administrators_nesterovas_21_8': 'Администраторы',
+            'training_periods_nesterovas_21_8': 'Периоды занятий',
+            'training_slots_nesterovas_21_8': 'Временные слоты'
+        }
+        
+        context = {
+            'user_info': user_info,
+            'table_name': table_name,
+            'table_display': table_display_names.get(table_name, table_name),
+            'table_structure': table_structure,
+            'action': 'add'
+        }
+        
+        return render(request, 'dance_school/admin_edit_record.html', context)
+    
+    except Exception as e:
+        print(f"Ошибка загрузки формы: {str(e)}")
+        return HttpResponse(f"Ошибка загрузки формы: {str(e)}")
 
 def admin_delete_record(request):
     """Удаление записи в админ панели"""
@@ -449,9 +616,22 @@ def admin_delete_record(request):
             table = request.POST.get('table')
             record_id = request.POST.get('id')
             
-            DatabaseService.delete_record(table, record_id)
-            return redirect('admin_dashboard')
+            if table and record_id:
+                DatabaseService.delete_record(table, record_id)
+                return redirect('admin_dashboard')
+            else:
+                return HttpResponse("Не указана таблица или ID записи")
         except Exception as e:
-            return HttpResponse(f"Ошибка удаления: {e}")
+            return HttpResponse(f"Ошибка удаления: {str(e)}")
     
-    return redirect('admin_dashboard')
+    # Если GET запрос, показываем форму подтверждения
+    table = request.GET.get('table', '')
+    record_id = request.GET.get('id', '')
+    
+    context = {
+        'user_info': user_info,
+        'table': table,
+        'record_id': record_id
+    }
+    
+    return render(request, 'dance_school/admin_delete_record.html', context)

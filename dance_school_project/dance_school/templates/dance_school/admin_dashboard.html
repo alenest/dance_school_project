@@ -53,6 +53,7 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .btn {
@@ -75,6 +76,7 @@
         .btn-primary:hover {
             background: #3182ce;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
         }
         
         .btn-secondary {
@@ -149,57 +151,126 @@
             font-size: 1.1em;
         }
         
-        .tables-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-            gap: 30px;
-        }
-        
-        .table-section {
+        .tables-section {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
-        .table-header {
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e2e8f0;
         }
         
-        .table-header h2 {
+        .section-header h2 {
             color: #4a5568;
-            font-size: 1.5em;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tables-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 15px;
+        }
+        
+        .table-tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s ease;
+        }
+        
+        .table-tab:hover {
+            background: #4299e1;
+            color: white;
+            border-color: #4299e1;
+            transform: translateY(-2px);
+        }
+        
+        .table-tab.active {
+            background: #4299e1;
+            color: white;
+            border-color: #4299e1;
+        }
+        
+        .table-content {
+            display: none;
+        }
+        
+        .table-content.active {
+            display: block;
         }
         
         .table-controls {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+        
+        .search-box {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .data-table-container {
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            max-height: 600px;
+            overflow-y: auto;
         }
         
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            min-width: 800px;
         }
         
         .data-table th {
             background: #edf2f7;
             color: #4a5568;
             text-align: left;
-            padding: 12px 15px;
+            padding: 15px;
             font-weight: 600;
             border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         .data-table td {
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-bottom: 1px solid #e2e8f0;
-            vertical-align: top;
+            vertical-align: middle;
         }
         
         .data-table tr:hover {
@@ -208,10 +279,11 @@
         
         .actions-cell {
             white-space: nowrap;
+            min-width: 150px;
         }
         
         .action-btn {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border: none;
             border-radius: 4px;
             font-size: 12px;
@@ -249,141 +321,61 @@
             background: #38a169;
         }
         
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .page-btn {
-            padding: 8px 12px;
-            background: #edf2f7;
-            color: #4a5568;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .page-btn.active {
-            background: #4299e1;
+        .add-btn {
+            background: #48bb78;
             color: white;
-        }
-        
-        .page-btn:hover:not(.active) {
-            background: #e2e8f0;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .modal-header h2 {
-            color: #4a5568;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #718096;
-        }
-        
-        .close-btn:hover {
-            color: #e53e3e;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
             font-weight: 600;
-            color: #4a5568;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #4299e1;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .search-box {
-            margin-bottom: 20px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
+        .add-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
         }
         
         .status-active {
             color: #48bb78;
             font-weight: 600;
+            padding: 4px 8px;
+            background: #c6f6d5;
+            border-radius: 4px;
+            display: inline-block;
         }
         
         .status-inactive {
             color: #e53e3e;
             font-weight: 600;
+            padding: 4px 8px;
+            background: #fed7d7;
+            border-radius: 4px;
+            display: inline-block;
         }
         
-        .scrollable-table {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+        .empty-table {
+            text-align: center;
+            padding: 50px;
+            color: #718096;
+            font-size: 1.2em;
+        }
+        
+        .table-info {
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .record-count {
+            font-weight: 600;
+            color: #4299e1;
         }
         
         @media (max-width: 768px) {
@@ -395,12 +387,22 @@
                 padding: 20px;
             }
             
-            .tables-grid {
-                grid-template-columns: 1fr;
+            .controls {
+                flex-direction: column;
             }
             
-            .table-section {
-                padding: 15px;
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .tables-nav {
+                flex-direction: column;
+            }
+            
+            .table-tab {
+                width: 100%;
+                text-align: center;
             }
             
             .data-table {
@@ -412,22 +414,14 @@
                 padding: 8px 10px;
             }
             
+            .action-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+                margin: 1px;
+            }
+            
             .stats-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .table-controls {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .action-btn {
-                padding: 3px 6px;
-                font-size: 11px;
             }
         }
     </style>
@@ -439,7 +433,8 @@
             
             {% if user_info %}
             <div class="user-info">
-                Вы вошли как: <strong>{{ user_info.full_name }}</strong> (администратор)
+                <h3>Вы вошли как: <strong>{{ user_info.full_name }}</strong> (администратор)</h3>
+                <p>Полный доступ ко всем таблицам базы данных</p>
             </div>
             {% endif %}
             
@@ -468,66 +463,51 @@
             </div>
         </div>
         
-        <div class="tables-grid">
-            <!-- Таблица клиентов -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>👥 Клиенты</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=clients_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
+        <div class="tables-section">
+            <div class="section-header">
+                <h2>🗃️ Управление базой данных</h2>
+                <div style="color: #718096;">
+                    Всего таблиц: <strong>{{ all_tables|length }}</strong>
                 </div>
-                <div class="scrollable-table">
+            </div>
+            
+            <div class="tables-nav">
+                {% for table in all_tables %}
+                <div class="table-tab {% if forloop.first %}active{% endif %}" 
+                     onclick="showTable('{{ table.name }}')" 
+                     data-table="{{ table.name }}">
+                    {{ table.display }} ({{ table.data|length }})
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% for table in all_tables %}
+            <div id="table-{{ table.name }}" class="table-content {% if forloop.first %}active{% endif %}">
+                <div class="table-info">
+                    <div>
+                        <h3>{{ table.display }}</h3>
+                        <p>Всего записей: <span class="record-count">{{ table.data|length }}</span></p>
+                    </div>
+                    <a href="{% url 'admin_add_record' %}?table={{ table.name }}" class="add-btn">
+                        ➕ Добавить запись
+                    </a>
+                </div>
+                
+                {% if table.data %}
+                <div class="data-table-container">
                     <table class="data-table">
                         <thead>
+                            {% if table.name == 'clients_nesterovas_21_8' %}
                             <tr>
                                 <th>ID</th>
                                 <th>ФИО</th>
                                 <th>Телефон</th>
                                 <th>Email</th>
+                                <th>Дата рождения</th>
                                 <th>Статус</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for client in clients %}
-                            <tr>
-                                <td>{{ client.0 }}</td>
-                                <td>{{ client.2 }}</td>
-                                <td>{{ client.1 }}</td>
-                                <td>{{ client.4|default:"-" }}</td>
-                                <td>
-                                    <span class="{% if client.6 == 'активен' %}status-active{% else %}status-inactive{% endif %}">
-                                        {{ client.6 }}
-                                    </span>
-                                </td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=clients_nesterovas_21_8&action=edit&id={{ client.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="clients_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ client.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить клиента?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица тренеров -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>👨‍🏫 Тренеры</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=trainers_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'trainers_nesterovas_21_8' %}
                             <tr>
                                 <th>ID</th>
                                 <th>ФИО</th>
@@ -535,127 +515,22 @@
                                 <th>Email</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for trainer in trainers %}
-                            <tr>
-                                <td>{{ trainer.0 }}</td>
-                                <td>{{ trainer.2 }}</td>
-                                <td>{{ trainer.1 }}</td>
-                                <td>{{ trainer.3|default:"-" }}</td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=trainers_nesterovas_21_8&action=edit&id={{ trainer.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="trainers_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ trainer.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить тренера?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица направлений танцев -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>💃 Направления танцев</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=dance_styles_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'dance_styles_nesterovas_21_8' %}
                             <tr>
                                 <th>ID</th>
                                 <th>Название</th>
                                 <th>Уровень</th>
-                                <th>Возраст</th>
+                                <th>Возрастная группа</th>
                                 <th>Статус</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for style in dance_styles %}
-                            <tr>
-                                <td>{{ style.0 }}</td>
-                                <td>{{ style.1 }}</td>
-                                <td>{{ style.2 }}</td>
-                                <td>{{ style.3 }}</td>
-                                <td>
-                                    <span class="{% if style.4 == 'активно' %}status-active{% else %}status-inactive{% endif %}">
-                                        {{ style.4 }}
-                                    </span>
-                                </td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=dance_styles_nesterovas_21_8&action=edit&id={{ style.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="dance_styles_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ style.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить направление?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица залов -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>🏛️ Залы</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=halls_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'halls_nesterovas_21_8' %}
                             <tr>
                                 <th>Номер</th>
                                 <th>Вместимость</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for hall in halls %}
-                            <tr>
-                                <td>{{ hall.0 }}</td>
-                                <td>{{ hall.1 }} чел.</td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=halls_nesterovas_21_8&action=edit&id={{ hall.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="halls_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ hall.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить зал?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица расписаний -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>📅 Расписания</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=schedules_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'schedules_nesterovas_21_8' %}
                             <tr>
                                 <th>ID</th>
                                 <th>Тренер</th>
@@ -666,92 +541,16 @@
                                 <th>Статус</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for schedule in schedules %}
-                            <tr>
-                                <td>{{ schedule.0 }}</td>
-                                <td>{{ schedule.9 }}</td>
-                                <td>{{ schedule.2 }}</td>
-                                <td>{{ schedule.4 }}</td>
-                                <td>{{ schedule.10 }}</td>
-                                <td>{{ schedule.7|floatformat:"0" }} ₽</td>
-                                <td>
-                                    <span class="{% if schedule.8 == 'активно' %}status-active{% else %}status-inactive{% endif %}">
-                                        {{ schedule.8 }}
-                                    </span>
-                                </td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=schedules_nesterovas_21_8&action=edit&id={{ schedule.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="schedules_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ schedule.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить расписание?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица регистраций -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>📝 Регистрации</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=registrations_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'registrations_nesterovas_21_8' %}
                             <tr>
                                 <th>ID</th>
                                 <th>Клиент</th>
-                                <th>Расписание</th>
+                                <th>Расписание ID</th>
                                 <th>Дата записи</th>
                                 <th>Админ</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for reg in registrations %}
-                            <tr>
-                                <td>{{ reg.0 }}</td>
-                                <td>{{ reg.5 }}</td>
-                                <td>{{ reg.2 }}</td>
-                                <td>{{ reg.3 }}</td>
-                                <td>{{ reg.4 }}</td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=registrations_nesterovas_21_8&action=edit&id={{ reg.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="registrations_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ reg.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить регистрацию?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица администраторов -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>⚙️ Администраторы</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=administrators_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'administrators_nesterovas_21_8' %}
                             <tr>
                                 <th>Логин</th>
                                 <th>ФИО</th>
@@ -759,124 +558,282 @@
                                 <th>Телефон</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for admin in administrators %}
-                            <tr>
-                                <td>{{ admin.0 }}</td>
-                                <td>{{ admin.1 }}</td>
-                                <td>{{ admin.2 }}</td>
-                                <td>{{ admin.3 }}</td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=administrators_nesterovas_21_8&action=edit&id={{ admin.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="administrators_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ admin.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить администратора?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица периодов занятий -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>📆 Периоды занятий</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=training_periods_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'training_periods_nesterovas_21_8' %}
                             <tr>
                                 <th>Начало</th>
                                 <th>Конец</th>
                                 <th>Действия</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for period in training_periods %}
-                            <tr>
-                                <td>{{ period.0 }}</td>
-                                <td>{{ period.1 }}</td>
-                                <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=training_periods_nesterovas_21_8&action=edit&id={{ period.0 }}" class="action-btn edit-btn">✏️</a>
-                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="table" value="training_periods_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ period.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить период?')">🗑️</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Таблица временных слотов -->
-            <div class="table-section">
-                <div class="table-header">
-                    <h2>⏰ Временные слоты</h2>
-                    <div class="table-controls">
-                        <a href="{% url 'admin_edit_record' %}?table=training_slots_nesterovas_21_8&action=add" class="btn btn-success">+ Добавить</a>
-                    </div>
-                </div>
-                <div class="scrollable-table">
-                    <table class="data-table">
-                        <thead>
+                            {% elif table.name == 'training_slots_nesterovas_21_8' %}
                             <tr>
                                 <th>Начало</th>
                                 <th>Конец</th>
                                 <th>Действия</th>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <th>ID</th>
+                                <th>Данные</th>
+                                <th>Действия</th>
+                            </tr>
+                            {% endif %}
                         </thead>
                         <tbody>
-                            {% for slot in training_slots %}
+                            {% for row in table.data %}
                             <tr>
-                                <td>{{ slot.0 }}</td>
-                                <td>{{ slot.1 }}</td>
+                                {% if table.name == 'clients_nesterovas_21_8' %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.full_name }}</td>
+                                <td>{{ row.phone }}</td>
+                                <td>{{ row.email|default:"-" }}</td>
+                                <td>{{ row.birth_date|date:"d.m.Y" }}</td>
+                                <td>
+                                    <span class="{% if row.status == 'активен' %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ row.status }}
+                                    </span>
+                                </td>
                                 <td class="actions-cell">
-                                    <a href="{% url 'admin_edit_record' %}?table=training_slots_nesterovas_21_8&action=edit&id={{ slot.0 }}" class="action-btn edit-btn">✏️</a>
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
                                     <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
                                         {% csrf_token %}
-                                        <input type="hidden" name="table" value="training_slots_nesterovas_21_8">
-                                        <input type="hidden" name="id" value="{{ slot.0 }}">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Удалить временной слот?')">🗑️</button>
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить клиента {{ row.full_name }}?')">
+                                            🗑️ Удалить
+                                        </button>
                                     </form>
                                 </td>
+                                
+                                {% elif table.name == 'trainers_nesterovas_21_8' %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.full_name }}</td>
+                                <td>{{ row.phone }}</td>
+                                <td>{{ row.email|default:"-" }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить тренера {{ row.full_name }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'dance_styles_nesterovas_21_8' %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.difficulty }}</td>
+                                <td>{{ row.age_group }}</td>
+                                <td>
+                                    <span class="{% if row.status == 'активно' %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ row.status }}
+                                    </span>
+                                </td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить направление {{ row.name }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'halls_nesterovas_21_8' %}
+                                <td>{{ row.number }}</td>
+                                <td>{{ row.capacity }} чел.</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.number }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.number }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить зал №{{ row.number }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'schedules_nesterovas_21_8' %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.trainer_name }}</td>
+                                <td>{{ row.weekday }}</td>
+                                <td>{{ row.start_time }}</td>
+                                <td>{{ row.style_name }}</td>
+                                <td>{{ row.price|floatformat:"0" }} ₽</td>
+                                <td>
+                                    <span class="{% if row.status == 'активно' %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ row.status }}
+                                    </span>
+                                </td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить расписание ID {{ row.id }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'registrations_nesterovas_21_8' %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.client_name }}</td>
+                                <td>{{ row.schedule_id }}</td>
+                                <td>{{ row.datetime|date:"d.m.Y H:i" }}</td>
+                                <td>{{ row.admin_username }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить регистрацию ID {{ row.id }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'administrators_nesterovas_21_8' %}
+                                <td>{{ row.username }}</td>
+                                <td>{{ row.full_name }}</td>
+                                <td>{{ row.position }}</td>
+                                <td>{{ row.phone }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.username }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.username }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить администратора {{ row.username }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'training_periods_nesterovas_21_8' %}
+                                <td>{{ row.start_date|date:"d.m.Y" }}</td>
+                                <td>{{ row.end_date|date:"d.m.Y" }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.start_date|date:'Y-m-d' }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.start_date|date:'Y-m-d' }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить период с {{ row.start_date|date:"d.m.Y" }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% elif table.name == 'training_slots_nesterovas_21_8' %}
+                                <td>{{ row.start_time }}</td>
+                                <td>{{ row.end_time }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.start_time }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.start_time }}">
+                                        <button type="submit" class="action-btn delete-btn" 
+                                                onclick="return confirm('Удалить временной слот {{ row.start_time }}?')">
+                                            🗑️ Удалить
+                                        </button>
+                                    </form>
+                                </td>
+                                
+                                {% else %}
+                                <td>{{ row.id }}</td>
+                                <td>{{ row|json_script }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}&id={{ row.id }}" 
+                                       class="action-btn edit-btn">✏️ Редактировать</a>
+                                    <form action="{% url 'admin_delete_record' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="table" value="{{ table.name }}">
+                                        <input type="hidden" name="id" value="{{ row.id }}">
+                                        <button type="submit" class="action-btn delete-btn">🗑️ Удалить</button>
+                                    </form>
+                                </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                {% else %}
+                <div class="empty-table">
+                    <p>В таблице "{{ table.display }}" нет записей</p>
+                    <a href="{% url 'admin_add_record' %}?table={{ table.name }}" class="add-btn" style="margin-top: 20px;">
+                        ➕ Добавить первую запись
+                    </a>
+                </div>
+                {% endif %}
             </div>
+            {% endfor %}
         </div>
     </div>
 
     <script>
-        // Функция для открытия модального окна
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
+        function showTable(tableName) {
+            // Скрываем все таблицы
+            document.querySelectorAll('.table-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Показываем выбранную таблицу
+            document.getElementById('table-' + tableName).classList.add('active');
+            
+            // Обновляем активные вкладки
+            document.querySelectorAll('.table-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.table === tableName) {
+                    tab.classList.add('active');
+                }
+            });
         }
         
-        // Функция для закрытия модального окна
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Первая таблица уже активна
+        });
         
-        // Закрытие модального окна при клике вне его
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
+        // Функция поиска в таблице
+        function searchInTable(tableName, searchTerm) {
+            const table = document.getElementById('table-' + tableName);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
         
         // Подтверждение удаления
