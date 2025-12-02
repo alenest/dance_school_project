@@ -1,0 +1,117 @@
+{% extends 'dance_school/base.html' %}
+
+{% block title %}Функции и представления БД{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Использование объектов базы данных</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5>Представление</h5>
+                </div>
+                <div class="card-body">
+                    <h6>schedule_details_view_nesterovas_21_8</h6>
+                    <p>Используется для получения расписания на главной странице и в публичном расписании.</p>
+                    <ul>
+                        <li><strong>Запрос:</strong> SELECT * FROM schedule_details_view_nesterovas_21_8 WHERE "Статус" = 'активно'</li>
+                        <li><strong>Поля:</strong> ID, ФИО тренера, Направление танцев, День недели, Время начала, Время окончания, Зал, Вместимость, Стоимость, Статус, Зарегистрировано, Свободных мест</li>
+                        <li><strong>Используется в:</strong> home(), public_schedule()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5>Скалярная функция</h5>
+                </div>
+                <div class="card-body">
+                    <h6>get_longest_client_name_nesterovas_21_8()</h6>
+                    <p>Возвращает самое длинное ФИО клиента из базы данных.</p>
+                    <ul>
+                        <li><strong>Вызов:</strong> SELECT get_longest_client_name_nesterovas_21_8()</li>
+                        <li><strong>Результат:</strong> {{ longest_name }}</li>
+                        <li><strong>Используется в:</strong> home() (статистика), admin_dashboard()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5>Табличная функция</h5>
+                </div>
+                <div class="card-body">
+                    <h6>get_top10_expensive_schedules_nesterovas_21_8()</h6>
+                    <p>Возвращает топ-10 самых дорогих расписаний занятий.</p>
+                    <ul>
+                        <li><strong>Вызов:</strong> SELECT * FROM get_top10_expensive_schedules_nesterovas_21_8()</li>
+                        <li><strong>Количество записей:</strong> {{ top10_count }}</li>
+                        <li><strong>Используется в:</strong> admin_dashboard()</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5>Функция расчета скидки</h5>
+                </div>
+                <div class="card-body">
+                    <h6>calculate_discount_db_nesterovas_21_8()</h6>
+                    <p>Вычисляет итоговую цену с учетом скидок по возрасту и количеству записей.</p>
+                    <ul>
+                        <li><strong>Вызов:</strong> SELECT calculate_discount_db_nesterovas_21_8(5000, 22, 4)</li>
+                        <li><strong>Параметры:</strong> базовая цена, возраст клиента, количество записей</li>
+                        <li><strong>Используется в:</strong> home() (калькулятор скидок)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>Примеры данных из представления</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ФИО тренера</th>
+                        <th>Направление</th>
+                        <th>День недели</th>
+                        <th>Время</th>
+                        <th>Стоимость</th>
+                        <th>Свободных мест</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in view_data %}
+                    <tr>
+                        <td>{{ item.1 }}</td>
+                        <td>{{ item.2 }}</td>
+                        <td>{{ item.4 }}</td>
+                        <td>{{ item.5 }} - {{ item.6 }}</td>
+                        <td>{{ item.9 }}</td>
+                        <td>{{ item.11 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">Нет данных</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

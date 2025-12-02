@@ -659,7 +659,20 @@
                 <div class="stat-number">{{ total_styles }}</div>
                 <div class="stat-label">Направлений танцев</div>
             </div>
+            <div class="stat-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="stat-label">Самое длинное ФИО</h5>
+                        <p class="stat-label" style="font-size: 0.9rem;">
+                            {{ longest_client_name|default:"Нет данных" }}
+                        </p>
+                        <small class="stat-label">Скалярная функция БД</small>
+                    </div>
+                </div>
+            </div>
+            
         </div>
+
         
         <!-- Расписание -->
         <div class="schedule-section">
