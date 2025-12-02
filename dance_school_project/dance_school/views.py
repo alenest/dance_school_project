@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 import json
 import traceback
+from datetime import datetime, date, time  # Импорт datetime добавлен
 from .services.database_service import DatabaseService
 
 def home(request):
@@ -464,7 +465,7 @@ def admin_dashboard(request):
         return HttpResponse(f"Ошибка загрузки данных: {str(e)}")
 
 def admin_edit_record(request):
-    """Редактирование существующей записи в админ панели"""
+    """Редактирование существующей записи в админ панели (ИСПРАВЛЕННАЯ ВЕРСИЯ)"""
     user_cookie = request.COOKIES.get('user_info')
     if not user_cookie:
         return redirect('home')
@@ -482,29 +483,221 @@ def admin_edit_record(request):
     if not table_name:
         return HttpResponse("Не указана таблица")
     
+    # Определяем primary key для таблицы
+    pk_columns = {
+        'clients_nesterovas_21_8': 'client_id',
+        'trainers_nesterovas_21_8': 'trainer_id',
+        'dance_styles_nesterovas_21_8': 'dance_style_id',
+        'halls_nesterovas_21_8': 'hall_number_nesterovas_21_8',
+        'schedules_nesterovas_21_8': 'schedule_id',
+        'registrations_nesterovas_21_8': 'registration_id',
+        'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
+        'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
+        'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
+    }
+    
+    pk_column = pk_columns.get(table_name)
+    if not pk_column:
+        return HttpResponse("Неизвестная таблица")
+    
     if request.method == 'POST':
         try:
-            # Собираем данные из формы
+            # Получаем все данные из формы
             form_data = {}
             for key, value in request.POST.items():
                 if key not in ['csrfmiddlewaretoken', 'table', 'id', 'action']:
-                    if value != '':
-                        form_data[key] = value
+                    form_data[key] = value
             
-            if record_id:
-                # Обновляем запись
-                DatabaseService.update_record(table_name, record_id, form_data)
-            else:
-                # Добавляем запись
-                DatabaseService.insert_record(table_name, form_data)
+            # В зависимости от таблицы вызываем соответствующую процедуру или функцию
+            if table_name == 'clients_nesterovas_21_8':
+                # Используем процедуру из базы данных для клиентов
+                DatabaseService.execute_query(
+                    "CALL update_client_nesterovas_21_8(%s, %s, %s, %s, %s, %s, %s)",
+                    [
+                        record_id,
+                        form_data.get('contact_phone_nesterovas_21_8'),
+                        form_data.get('client_full_name_nesterovas_21_8'),
+                        form_data.get('client_birth_date_nesterovas_21_8'),
+                        form_data.get('contact_email_nesterovas_21_8'),
+                        form_data.get('parent_guardian_name_nesterovas_21_8'),
+                        form_data.get('client_status_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
                 
+            elif table_name == 'dance_styles_nesterovas_21_8':
+                # Для остальных таблиц используем прямое обновление
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET dance_style_name_nesterovas_21_8 = %s,
+                        difficulty_level_nesterovas_21_8 = %s,
+                        target_age_group_nesterovas_21_8 = %s,
+                        style_status_nesterovas_21_8 = %s
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('dance_style_name_nesterovas_21_8'),
+                        form_data.get('difficulty_level_nesterovas_21_8'),
+                        form_data.get('target_age_group_nesterovas_21_8'),
+                        form_data.get('style_status_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'trainers_nesterovas_21_8':
+                # Прямое обновление для тренеров
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET trainer_phone_nesterovas_21_8 = %s,
+                        trainer_full_name_nesterovas_21_8 = %s,
+                        trainer_email_nesterovas_21_8 = %s
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('trainer_phone_nesterovas_21_8'),
+                        form_data.get('trainer_full_name_nesterovas_21_8'),
+                        form_data.get('trainer_email_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'halls_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET hall_number_nesterovas_21_8 = %s::integer,
+                        hall_capacity_nesterovas_21_8 = %s::integer
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('hall_number_nesterovas_21_8'),
+                        form_data.get('hall_capacity_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'schedules_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET trainer_id = %s::integer,
+                        class_weekday_nesterovas_21_8 = %s,
+                        period_start_date_nesterovas_21_8 = %s::date,
+                        class_start_time_nesterovas_21_8 = %s::time,
+                        hall_number_nesterovas_21_8 = %s::integer,
+                        dance_style_id = %s::integer,
+                        subscription_price_nesterovas_21_8 = %s::numeric,
+                        schedule_status_nesterovas_21_8 = %s
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('trainer_id'),
+                        form_data.get('class_weekday_nesterovas_21_8'),
+                        form_data.get('period_start_date_nesterovas_21_8'),
+                        form_data.get('class_start_time_nesterovas_21_8'),
+                        form_data.get('hall_number_nesterovas_21_8'),
+                        form_data.get('dance_style_id'),
+                        form_data.get('subscription_price_nesterovas_21_8'),
+                        form_data.get('schedule_status_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'registrations_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET client_id = %s::integer,
+                        schedule_id = %s::integer,
+                        registration_datetime_nesterovas_21_8 = %s::timestamp,
+                        admin_username_nesterovas_21_8 = %s
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('client_id'),
+                        form_data.get('schedule_id'),
+                        form_data.get('registration_datetime_nesterovas_21_8'),
+                        form_data.get('admin_username_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'administrators_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET admin_username_nesterovas_21_8 = %s,
+                        admin_full_name_nesterovas_21_8 = %s,
+                        admin_position_nesterovas_21_8 = %s,
+                        admin_phone_nesterovas_21_8 = %s,
+                        admin_password_hash_nesterovas_21_8 = %s
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('admin_username_nesterovas_21_8'),
+                        form_data.get('admin_full_name_nesterovas_21_8'),
+                        form_data.get('admin_position_nesterovas_21_8'),
+                        form_data.get('admin_phone_nesterovas_21_8'),
+                        form_data.get('admin_password_hash_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'training_periods_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET period_start_date_nesterovas_21_8 = %s::date,
+                        period_end_date_nesterovas_21_8 = %s::date
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('period_start_date_nesterovas_21_8'),
+                        form_data.get('period_end_date_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'training_slots_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    UPDATE {table_name} 
+                    SET class_start_time_nesterovas_21_8 = %s::time,
+                        class_end_time_nesterovas_21_8 = %s::time
+                    WHERE {pk_column} = %s
+                    """,
+                    [
+                        form_data.get('class_start_time_nesterovas_21_8'),
+                        form_data.get('class_end_time_nesterovas_21_8'),
+                        record_id
+                    ],
+                    fetch=False
+                )
+            
             return redirect('admin_dashboard')
         except Exception as e:
             return HttpResponse(f"Ошибка сохранения: {str(e)}")
     
+    # GET запрос - отображаем форму редактирования
     try:
         # Получаем структуру таблицы
         table_structure = DatabaseService.get_table_structure(table_name)
+        
+        # Получаем данные записи
+        record_data = None
+        if record_id:
+            record_result = DatabaseService.get_record_by_id(table_name, record_id)
+            if record_result:
+                record_data = record_result[0]
         
         # Определяем friendly-имена для таблиц
         table_display_names = {
@@ -519,13 +712,6 @@ def admin_edit_record(request):
             'training_slots_nesterovas_21_8': 'Временные слоты'
         }
         
-        # Получаем данные записи для редактирования
-        record_data = None
-        if record_id:
-            record_result = DatabaseService.get_record_by_id(table_name, record_id)
-            if record_result:
-                record_data = record_result[0]  # Берем первую запись
-        
         # Подготавливаем данные для шаблона
         columns_data = []
         for i, column in enumerate(table_structure):
@@ -538,11 +724,14 @@ def admin_edit_record(request):
             if record_data and i < len(record_data):
                 current_value = record_data[i]
                 # Преобразуем даты и время в строки для отображения в форме
-                if current_value and isinstance(current_value, (datetime.date, datetime.time)):
-                    if isinstance(current_value, datetime.date):
-                        current_value = current_value.strftime('%Y-%m-%d')
-                    elif isinstance(current_value, datetime.time):
-                        current_value = current_value.strftime('%H:%M')
+                if current_value:
+                    try:
+                        if isinstance(current_value, (date, datetime)):
+                            current_value = current_value.strftime('%Y-%m-%d')
+                        elif isinstance(current_value, time):
+                            current_value = current_value.strftime('%H:%M')
+                    except:
+                        pass  # Оставляем как есть, если не удалось преобразовать
             
             columns_data.append({
                 'name': column_name,
@@ -586,7 +775,15 @@ def admin_delete_record(request):
             record_id = request.POST.get('id')
             
             if table and record_id:
-                DatabaseService.delete_record(table, record_id)
+                # Для клиентов используем функцию из базы данных
+                if table == 'clients_nesterovas_21_8':
+                    DatabaseService.execute_query(
+                        "SELECT delete_client_void_nesterovas_21_8(%s)",
+                        [record_id],
+                        fetch=False
+                    )
+                else:
+                    DatabaseService.delete_record(table, record_id)
                 return redirect('admin_dashboard')
             else:
                 return HttpResponse("Не указана таблица или ID записи")
@@ -604,22 +801,3 @@ def admin_delete_record(request):
     }
     
     return render(request, 'dance_school/admin_delete_record.html', context)
-
-def admin_add_record(request):
-    """Быстрое добавление записи через удобную форму"""
-    user_cookie = request.COOKIES.get('user_info')
-    if not user_cookie:
-        return redirect('home')
-    
-    try:
-        user_info = json.loads(user_cookie)
-        if user_info.get('role') != 'admin':
-            return redirect('home')
-    except:
-        return redirect('home')
-    
-    context = {
-        'user_info': user_info
-    }
-    
-    return render(request, 'dance_school/admin_add_record.html', context)

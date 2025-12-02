@@ -1,8 +1,6 @@
 import psycopg2
 from django.conf import settings
 import traceback
-from datetime import datetime, date, time
-import json
 
 class DatabaseService:
     @staticmethod
@@ -409,127 +407,6 @@ class DatabaseService:
         
         query = f"SELECT * FROM {table_name} WHERE {pk_column} = %s"
         return DatabaseService.execute_query(query, [record_id])
-    
-    @staticmethod
-    def update_record(table_name, record_id, form_data):
-        """Обновить запись в таблице"""
-        # Определяем primary key для таблицы
-        pk_columns = {
-            'clients_nesterovas_21_8': 'client_id',
-            'trainers_nesterovas_21_8': 'trainer_id',
-            'dance_styles_nesterovas_21_8': 'dance_style_id',
-            'halls_nesterovas_21_8': 'hall_number_nesterovas_21_8',
-            'schedules_nesterovas_21_8': 'schedule_id',
-            'registrations_nesterovas_21_8': 'registration_id',
-            'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
-            'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
-            'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }
-        
-        pk_column = pk_columns.get(table_name)
-        if not pk_column:
-            raise ValueError(f"Неизвестная таблица: {table_name}")
-        
-        # Собираем SET часть запроса
-        set_parts = []
-        values = []
-        
-        for key, value in form_data.items():
-            if key != pk_column and value is not None and value != '':
-                # Определяем тип данных для правильного форматирования
-                if 'date' in key.lower():
-                    set_parts.append(f"{key} = %s::date")
-                    values.append(value)
-                elif 'time' in key.lower():
-                    set_parts.append(f"{key} = %s::time")
-                    values.append(value)
-                elif 'price' in key.lower() or 'capacity' in key.lower():
-                    set_parts.append(f"{key} = %s::numeric")
-                    values.append(float(value) if value else 0)
-                elif 'id' in key.lower() or 'number' in key.lower():
-                    try:
-                        set_parts.append(f"{key} = %s::integer")
-                        values.append(int(value) if value else 0)
-                    except:
-                        set_parts.append(f"{key} = %s")
-                        values.append(value)
-                else:
-                    set_parts.append(f"{key} = %s")
-                    values.append(value)
-        
-        if not set_parts:
-            return
-        
-        set_clause = ", ".join(set_parts)
-        values.append(record_id)
-        
-        query = f"UPDATE {table_name} SET {set_clause} WHERE {pk_column} = %s"
-        print(f"Выполняется запрос UPDATE: {query}")
-        print(f"Параметры: {values}")
-        DatabaseService.execute_query(query, values, fetch=False)
-    
-    @staticmethod
-    def insert_record(table_name, form_data):
-        """Добавить новую запись в таблицу"""
-        # Определяем primary key для таблицы (если она SERIAL, то не включаем в INSERT)
-        pk_columns = {
-            'clients_nesterovas_21_8': 'client_id',
-            'trainers_nesterovas_21_8': 'trainer_id',
-            'dance_styles_nesterovas_21_8': 'dance_style_id',
-            'halls_nesterovas_21_8': 'hall_number_nesterovas_21_8',
-            'schedules_nesterovas_21_8': 'schedule_id',
-            'registrations_nesterovas_21_8': 'registration_id',
-            'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
-            'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
-            'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
-        }
-        
-        pk_column = pk_columns.get(table_name)
-        
-        # Собираем данные для INSERT
-        columns = []
-        placeholders = []
-        values = []
-        
-        for key, value in form_data.items():
-            if value is not None and value != '':
-                # Пропускаем primary key, если он SERIAL
-                if key == pk_column and table_name in ['clients_nesterovas_21_8', 'trainers_nesterovas_21_8', 
-                                                      'dance_styles_nesterovas_21_8', 'schedules_nesterovas_21_8',
-                                                      'registrations_nesterovas_21_8']:
-                    continue
-                
-                columns.append(key)
-                placeholders.append("%s")
-                
-                # Преобразуем значения в нужные типы
-                if 'date' in key.lower():
-                    values.append(value)
-                elif 'time' in key.lower():
-                    values.append(value)
-                elif 'price' in key.lower() or 'capacity' in key.lower():
-                    try:
-                        values.append(float(value) if value else 0)
-                    except:
-                        values.append(0)
-                elif 'id' in key.lower() or 'number' in key.lower():
-                    try:
-                        values.append(int(value) if value else 0)
-                    except:
-                        values.append(0)
-                else:
-                    values.append(value)
-        
-        if not columns:
-            raise ValueError("Нет данных для вставки")
-        
-        columns_clause = ", ".join(columns)
-        placeholders_clause = ", ".join(placeholders)
-        
-        query = f"INSERT INTO {table_name} ({columns_clause}) VALUES ({placeholders_clause})"
-        print(f"Выполняется запрос INSERT: {query}")
-        print(f"Параметры: {values}")
-        DatabaseService.execute_query(query, values, fetch=False)
     
     @staticmethod
     def delete_record(table_name, record_id):

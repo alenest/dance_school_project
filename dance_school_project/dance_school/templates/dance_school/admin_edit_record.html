@@ -1,493 +1,77 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if action == 'add' %}Добавить запись{% else %}Редактировать запись{% endif %}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "dance_school/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Редактировать запись в таблице: {{ table_display }}</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="table" value="{{ table_name }}">
+        <input type="hidden" name="id" value="{{ record_id }}">
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-        
-        .header h1 {
-            color: #4a5568;
-            margin-bottom: 10px;
-            font-size: 2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .header p {
-            color: #718096;
-            font-size: 1.1em;
-        }
-        
-        .edit-form-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .form-info {
-            background: #edf2f7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .info-label {
-            font-size: 0.9em;
-            color: #718096;
-            margin-bottom: 5px;
-        }
-        
-        .info-value {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 1.1em;
-        }
-        
-        .edit-form {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .required::after {
-            content: '*';
-            color: #e53e3e;
-            margin-left: 3px;
-        }
-        
-        .form-control {
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            width: 100%;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        }
-        
-        .form-control[readonly],
-        .form-control[disabled] {
-            background: #f7fafc;
-            border-color: #cbd5e0;
-            color: #718096;
-            cursor: not-allowed;
-        }
-        
-        .form-help {
-            font-size: 0.85em;
-            color: #718096;
-            margin-top: 5px;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background: #4299e1;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #a0aec0;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #718096;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: #e53e3e;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c53030;
-            transform: translateY(-2px);
-        }
-        
-        .field-type {
-            font-size: 0.8em;
-            color: #a0aec0;
-            font-style: italic;
-            margin-left: auto;
-        }
-        
-        .error-message {
-            background: #fed7d7;
-            color: #742a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #fc8181;
-        }
-        
-        .success-message {
-            background: #c6f6d5;
-            color: #22543d;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #9ae6b4;
-        }
-        
-        .auto-field {
-            background: #f7fafc;
-            border-color: #cbd5e0;
-            color: #718096;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        
-        .checkbox-group input {
-            width: auto;
-            margin-right: 5px;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .edit-form-container {
-                padding: 20px;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-            
-            .form-info {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                {% if action == 'add' %}
-                    ➕ Добавить запись
-                {% else %}
-                    ✏️ Редактировать запись
-                {% endif %}
-            </h1>
-            <p>Таблица: <strong>{{ table_display }}</strong> ({{ table_name }})</p>
-        </div>
-        
-        <div class="edit-form-container">
-            <div class="form-info">
-                <div class="info-item">
-                    <span class="info-label">Таблица</span>
-                    <span class="info-value">{{ table_display }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Операция</span>
-                    <span class="info-value">
-                        {% if action == 'add' %}
-                            Добавление новой записи
-                        {% else %}
-                            Редактирование записи #{{ record_id }}
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Колонок</span>
-                    <span class="info-value">{{ columns_data|length }}</span>
-                </div>
-            </div>
-            
-            <form method="post" class="edit-form">
-                {% csrf_token %}
-                <input type="hidden" name="table" value="{{ table_name }}">
-                {% if record_id %}
-                <input type="hidden" name="id" value="{{ record_id }}">
-                {% endif %}
-                
-                <div class="form-row">
+        <div class="card mb-4">
+            <div class="card-body">
+                {% if columns_data %}
                     {% for column in columns_data %}
-                    <div class="form-group">
-                        <label for="{{ column.name }}">
-                            {{ column.name }}
-                            {% if not column.is_nullable %}
-                            <span class="required">*</span>
-                            {% endif %}
-                            <span class="field-type">{{ column.data_type }}</span>
-                        </label>
-                        
-                        {% if column.name == 'schedule_status_nesterovas_21_8' or column.name == 'client_status_nesterovas_21_8' or column.name == 'style_status_nesterovas_21_8' %}
-                            <select id="{{ column.name }}" name="{{ column.name }}" class="form-control" 
-                                    {% if not column.is_nullable %}required{% endif %}>
-                                <option value="">Выберите статус...</option>
-                                <option value="активно" {% if column.current_value == 'активно' %}selected{% endif %}>активно</option>
-                                <option value="неактивно" {% if column.current_value == 'неактивно' %}selected{% endif %}>неактивно</option>
-                            </select>
-                        
-                        {% elif column.name == 'difficulty_level_nesterovas_21_8' %}
-                            <select id="{{ column.name }}" name="{{ column.name }}" class="form-control" 
-                                    {% if not column.is_nullable %}required{% endif %}>
-                                <option value="">Выберите уровень...</option>
-                                <option value="начальный" {% if column.current_value == 'начальный' %}selected{% endif %}>начальный</option>
-                                <option value="средний" {% if column.current_value == 'средний' %}selected{% endif %}>средний</option>
-                                <option value="продвинутый" {% if column.current_value == 'продвинутый' %}selected{% endif %}>продвинутый</option>
-                            </select>
-                        
-                        {% elif column.name == 'class_weekday_nesterovas_21_8' %}
-                            <select id="{{ column.name }}" name="{{ column.name }}" class="form-control" 
-                                    {% if not column.is_nullable %}required{% endif %}>
-                                <option value="">Выберите день недели...</option>
-                                <option value="Понедельник" {% if column.current_value == 'Понедельник' %}selected{% endif %}>Понедельник</option>
-                                <option value="Вторник" {% if column.current_value == 'Вторник' %}selected{% endif %}>Вторник</option>
-                                <option value="Среда" {% if column.current_value == 'Среда' %}selected{% endif %}>Среда</option>
-                                <option value="Четверг" {% if column.current_value == 'Четверг' %}selected{% endif %}>Четверг</option>
-                                <option value="Пятница" {% if column.current_value == 'Пятница' %}selected{% endif %}>Пятница</option>
-                                <option value="Суббота" {% if column.current_value == 'Суббота' %}selected{% endif %}>Суббота</option>
-                                <option value="Воскресенье" {% if column.current_value == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
-                            </select>
-                        
-                        {% elif column.data_type in ['date', 'timestamp without time zone', 'timestamp with time zone'] %}
-                            <input type="date" 
-                                   id="{{ column.name }}" 
-                                   name="{{ column.name }}" 
-                                   value="{{ column.current_value }}"
-                                   class="form-control"
-                                   {% if not column.is_nullable %}required{% endif %}>
-                        
-                        {% elif column.data_type in ['time without time zone', 'time with time zone'] %}
-                            <input type="time" 
-                                   id="{{ column.name }}" 
-                                   name="{{ column.name }}" 
-                                   value="{{ column.current_value }}"
-                                   class="form-control"
-                                   {% if not column.is_nullable %}required{% endif %}>
-                        
-                        {% elif column.data_type in ['integer', 'bigint', 'smallint'] %}
-                            <input type="number" 
-                                   id="{{ column.name }}" 
-                                   name="{{ column.name }}" 
-                                   value="{{ column.current_value }}"
-                                   class="form-control"
-                                   step="1"
-                                   {% if not column.is_nullable %}required{% endif %}>
-                        
-                        {% elif column.data_type in ['numeric', 'decimal', 'real', 'double precision'] %}
-                            <input type="number" 
-                                   id="{{ column.name }}" 
-                                   name="{{ column.name }}" 
-                                   value="{{ column.current_value }}"
-                                   class="form-control"
-                                   step="0.01"
-                                   {% if not column.is_nullable %}required{% endif %}>
-                        
-                        {% elif column.data_type == 'boolean' %}
-                            <div class="checkbox-group">
-                                <input type="checkbox" 
-                                       id="{{ column.name }}" 
-                                       name="{{ column.name }}" 
-                                       value="true"
-                                       {% if column.current_value == 'True' or column.current_value == 'true' %}checked{% endif %}
-                                       class="form-control">
-                                <label for="{{ column.name }}" style="font-weight: normal;">Да</label>
-                            </div>
-                        
-                        {% else %}
-                            <input type="text" 
-                                   id="{{ column.name }}" 
-                                   name="{{ column.name }}" 
-                                   value="{{ column.current_value }}"
-                                   class="form-control"
-                                   {% if not column.is_nullable %}required{% endif %}>
-                        {% endif %}
-                        
-                        <div class="form-help">
-                            {% if column.is_nullable %}
-                                Необязательное поле
+                        {% if column.name != 'client_id' and column.name != 'trainer_id' and column.name != 'dance_style_id' and column.name != 'schedule_id' and column.name != 'registration_id' %}
+                        <div class="form-group mb-3">
+                            <label for="{{ column.name }}">{{ column.name|title }} ({{ column.data_type }})</label>
+                            
+                            {% if 'date' in column.name.lower %}
+                                <input type="date" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
+                            {% elif 'time' in column.name.lower %}
+                                <input type="time" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
+                            {% elif 'price' in column.name.lower or 'capacity' in column.name.lower %}
+                                <input type="number" step="0.01" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
+                            {% elif 'status' in column.name.lower %}
+                                <select class="form-control" id="{{ column.name }}" name="{{ column.name }}">
+                                    <option value="активно" {% if column.current_value == 'активно' %}selected{% endif %}>активно</option>
+                                    <option value="неактивно" {% if column.current_value == 'неактивно' %}selected{% endif %}>неактивно</option>
+                                    <option value="активен" {% if column.current_value == 'активен' %}selected{% endif %}>активен</option>
+                                    <option value="неактивен" {% if column.current_value == 'неактивен' %}selected{% endif %}>неактивен</option>
+                                </select>
+                            {% elif 'weekday' in column.name.lower %}
+                                <select class="form-control" id="{{ column.name }}" name="{{ column.name }}">
+                                    <option value="Понедельник" {% if column.current_value == 'Понедельник' %}selected{% endif %}>Понедельник</option>
+                                    <option value="Вторник" {% if column.current_value == 'Вторник' %}selected{% endif %}>Вторник</option>
+                                    <option value="Среда" {% if column.current_value == 'Среда' %}selected{% endif %}>Среда</option>
+                                    <option value="Четверг" {% if column.current_value == 'Четверг' %}selected{% endif %}>Четверг</option>
+                                    <option value="Пятница" {% if column.current_value == 'Пятница' %}selected{% endif %}>Пятница</option>
+                                    <option value="Суббота" {% if column.current_value == 'Суббота' %}selected{% endif %}>Суббота</option>
+                                    <option value="Воскресенье" {% if column.current_value == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
+                                </select>
+                            {% elif column.data_type == 'integer' %}
+                                <input type="number" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
+                            {% elif column.data_type == 'numeric' %}
+                                <input type="number" step="0.01" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
                             {% else %}
-                                Обязательное поле
+                                <input type="text" class="form-control" id="{{ column.name }}" 
+                                       name="{{ column.name }}" value="{{ column.current_value }}"
+                                       {% if not column.is_nullable %}required{% endif %}>
                             {% endif %}
                         </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        {% if action == 'add' %}
-                            ➕ Создать запись
-                        {% else %}
-                            💾 Сохранить изменения
                         {% endif %}
-                    </button>
-                    
-                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
-                        ↩️ Отмена
-                    </a>
-                    
-                    {% if action == 'edit' %}
-                    <a href="{% url 'admin_delete_record' %}?table={{ table_name }}&id={{ record_id }}" 
-                       class="btn btn-danger"
-                       onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
-                        🗑️ Удалить
-                    </a>
-                    {% endif %}
-                </div>
-            </form>
-            
-            <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 10px;">
-                <h3 style="color: #4a5568; margin-bottom: 10px;">💡 Подсказки:</h3>
-                <ul style="color: #718096; padding-left: 20px;">
-                    <li>Поля отмеченные <span style="color: #e53e3e;">*</span> являются обязательными</li>
-                    <li>Для полей с типом "date" используйте формат ГГГГ-ММ-ДД</li>
-                    <li>Для полей с типом "time" используйте формат ЧЧ:ММ</li>
-                    <li>Для числовых полей используйте только цифры</li>
-                    <li>При добавлении новой записи ID заполнится автоматически</li>
-                </ul>
+                    {% endfor %}
+                {% else %}
+                    <p>Нет данных для редактирования</p>
+                {% endif %}
             </div>
         </div>
-    </div>
-
-    <script>
-        // Автоматическая установка сегодняшней даты для полей с датой при добавлении
-        document.addEventListener('DOMContentLoaded', function() {
-            {% if action == 'add' %}
-            const dateFields = document.querySelectorAll('input[type="date"]');
-            dateFields.forEach(field => {
-                if (!field.value) {
-                    field.value = new Date().toISOString().split('T')[0];
-                }
-            });
-            
-            // Автоматическая установка текущего времени для полей с временем
-            const timeFields = document.querySelectorAll('input[type="time"]');
-            timeFields.forEach(field => {
-                if (!field.value) {
-                    const now = new Date();
-                    const hours = now.getHours().toString().padStart(2, '0');
-                    const minutes = now.getMinutes().toString().padStart(2, '0');
-                    field.value = `${hours}:${minutes}`;
-                }
-            });
-            
-            // Установка значений по умолчанию для некоторых полей
-            const statusFields = document.querySelectorAll('select');
-            statusFields.forEach(field => {
-                if (field.id.includes('status') && !field.value) {
-                    field.value = 'активно';
-                }
-            });
-            {% endif %}
-        });
-    </script>
-</body>
-</html>
+        
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

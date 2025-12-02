@@ -488,7 +488,7 @@
                         <h3>{{ table.display }}</h3>
                         <p>Всего записей: <span class="record-count">{{ table.data|length }}</span></p>
                     </div>
-                    <a href="{% url 'admin_add_record' %}?table={{ table.name }}" class="add-btn">
+                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}" class="add-btn">
                         ➕ Добавить запись
                     </a>
                 </div>
@@ -787,7 +787,7 @@
                 {% else %}
                 <div class="empty-table">
                     <p>В таблице "{{ table.display }}" нет записей</p>
-                    <a href="{% url 'admin_add_record' %}?table={{ table.name }}" class="add-btn" style="margin-top: 20px;">
+                    <a href="{% url 'admin_edit_record' %}?table={{ table.name }}" class="add-btn" style="margin-top: 20px;">
                         ➕ Добавить первую запись
                     </a>
                 </div>
