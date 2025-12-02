@@ -88,6 +88,42 @@
             border-color: #4299e1;
         }
         
+        .readonly-field {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            color: #718096;
+        }
+        
+        .current-info {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
         .button-group {
             display: flex;
             gap: 15px;
@@ -128,31 +164,6 @@
             transform: translateY(-2px);
         }
         
-        .current-info {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #edf2f7;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #4a5568;
-        }
-        
-        .info-value {
-            color: #718096;
-        }
-        
         .message {
             padding: 15px;
             border-radius: 8px;
@@ -188,6 +199,10 @@
             .button-group {
                 flex-direction: column;
             }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -206,21 +221,23 @@
         
         <div class="current-info">
             <h3 style="margin-bottom: 15px; color: #4a5568;">📋 Текущая информация:</h3>
-            <div class="info-item">
-                <span class="info-label">Направление:</span>
-                <span class="info-value">ID: {{ schedule.style_id }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">День недели:</span>
-                <span class="info-value">{{ schedule.weekday }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Время:</span>
-                <span class="info-value">{{ schedule.start_time }} - {{ schedule.end_time }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Период:</span>
-                <span class="info-value">{{ schedule.period_start }}</span>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">ID расписания:</span>
+                    <span class="info-value">{{ schedule.id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Направление:</span>
+                    <span class="info-value">ID: {{ schedule.style_id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Время:</span>
+                    <span class="info-value">{{ schedule.start_time }} - {{ schedule.end_time }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Период:</span>
+                    <span class="info-value">{{ schedule.period_start }}</span>
+                </div>
             </div>
         </div>
         
@@ -241,12 +258,18 @@
             </div>
             
             <div class="form-group">
+                <label for="start_time">Время начала *</label>
+                <input type="time" id="start_time" name="start_time" value="{{ schedule.start_time }}" required>
+                <small style="color: #718096;">Текущее время: {{ schedule.start_time }}</small>
+            </div>
+            
+            <div class="form-group">
                 <label for="hall_number">Зал *</label>
                 <select id="hall_number" name="hall_number" required>
                     <option value="">Выберите зал</option>
                     {% for hall in halls %}
                         <option value="{{ hall.0 }}" {% if hall.0 == schedule.hall %}selected{% endif %}>
-                            Зал {{ hall.0 }} (вместимость: {{ hall.1 }})
+                            Зал {{ hall.0 }} (вместимость: {{ hall.1 }} чел.)
                         </option>
                     {% endfor %}
                 </select>

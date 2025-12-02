@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if action == 'add' %}Добавить запись{% else %}Редактировать запись{% endif %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            margin: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .header p {
+            color: #718096;
+        }
+        
+        .table-info {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .required::after {
+            content: '*';
+            color: #e53e3e;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #a0aec0;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #718096;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+            transform: translateY(-2px);
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #4299e1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .field-info {
+            font-size: 0.85em;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .edit-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="header">
+            <h1>{% if action == 'add' %}➕ Добавить запись{% else %}✏️ Редактировать запись{% endif %}</h1>
+            <p>Таблица: <strong>{{ table }}</strong></p>
+        </div>
+        
+        <div class="table-info">
+            <p>ID записи: <strong>{% if record_id %}{{ record_id }}{% else %}Новая запись{% endif %}</strong></p>
+            <p>Тип операции: <strong>{% if action == 'add' %}Добавление{% else %}Редактирование{% endif %}</strong></p>
+        </div>
+        
+        <form method="post" class="edit-form">
+            {% csrf_token %}
+            <input type="hidden" name="table" value="{{ table }}">
+            <input type="hidden" name="action" value="{{ action }}">
+            
+            {% for column in table_structure %}
+            {% if column.0 not in ['schedule_id', 'registration_id'] or action == 'add' %}
+            <div class="form-group">
+                <label for="{{ column.0 }}" class="{% if column.2 == 'NO' %}required{% endif %}">
+                    {{ column.0|title }}
+                </label>
+                
+                {% if action == 'edit' and record_data %}
+                    {% with col_index=forloop.counter0 %}
+                        {% if column.1 in ['character varying', 'text'] %}
+                            <input type="text" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'' }}"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% elif column.1 == 'integer' %}
+                            <input type="number" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'0' }}"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% elif column.1 == 'numeric' %}
+                            <input type="number" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'0' }}"
+                                   step="0.01"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% elif column.1 == 'date' %}
+                            <input type="date" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'' }}"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% elif column.1 == 'time without time zone' %}
+                            <input type="time" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'' }}"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% elif column.0 == 'schedule_status_nesterovas_21_8' or column.0 == 'client_status_nesterovas_21_8' or column.0 == 'style_status_nesterovas_21_8' %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
+                                <option value="активно" {% if record_data|slice:col_index|last == 'активно' %}selected{% endif %}>активно</option>
+                                <option value="неактивно" {% if record_data|slice:col_index|last == 'неактивно' %}selected{% endif %}>неактивно</option>
+                            </select>
+                        {% elif column.0 == 'difficulty_level_nesterovas_21_8' %}
+                            <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
+                                <option value="начальный" {% if record_data|slice:col_index|last == 'начальный' %}selected{% endif %}>начальный</option>
+                                <option value="средний" {% if record_data|slice:col_index|last == 'средний' %}selected{% endif %}>средний</option>
+                                <option value="продвинутый" {% if record_data|slice:col_index|last == 'продвинутый' %}selected{% endif %}>продвинутый</option>
+                            </select>
+                        {% else %}
+                            <input type="text" 
+                                   id="{{ column.0 }}" 
+                                   name="{{ column.0 }}" 
+                                   value="{{ record_data|slice:col_index|last|default:'' }}"
+                                   {% if column.2 == 'NO' %}required{% endif %}>
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    {% if column.1 in ['character varying', 'text'] %}
+                        <input type="text" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               {% if column.2 == 'NO' %}required{% endif %}
+                               placeholder="Введите значение">
+                    {% elif column.1 == 'integer' %}
+                        <input type="number" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               value="0"
+                               {% if column.2 == 'NO' %}required{% endif %}>
+                    {% elif column.1 == 'numeric' %}
+                        <input type="number" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               value="0"
+                               step="0.01"
+                               {% if column.2 == 'NO' %}required{% endif %}>
+                    {% elif column.1 == 'date' %}
+                        <input type="date" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               {% if column.2 == 'NO' %}required{% endif %}>
+                    {% elif column.1 == 'time without time zone' %}
+                        <input type="time" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               {% if column.2 == 'NO' %}required{% endif %}>
+                    {% elif column.0 == 'schedule_status_nesterovas_21_8' or column.0 == 'client_status_nesterovas_21_8' or column.0 == 'style_status_nesterovas_21_8' %}
+                        <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
+                            <option value="активно">активно</option>
+                            <option value="неактивно">неактивно</option>
+                        </select>
+                    {% elif column.0 == 'difficulty_level_nesterovas_21_8' %}
+                        <select id="{{ column.0 }}" name="{{ column.0 }}" {% if column.2 == 'NO' %}required{% endif %}>
+                            <option value="начальный">начальный</option>
+                            <option value="средний">средний</option>
+                            <option value="продвинутый">продвинутый</option>
+                        </select>
+                    {% else %}
+                        <input type="text" 
+                               id="{{ column.0 }}" 
+                               name="{{ column.0 }}" 
+                               {% if column.2 == 'NO' %}required{% endif %}
+                               placeholder="Введите значение">
+                    {% endif %}
+                {% endif %}
+                
+                <div class="field-info">
+                    Тип: {{ column.1 }} | 
+                    Обязательное: {% if column.2 == 'NO' %}Да{% else %}Нет{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if action == 'add' %}➕ Создать запись{% else %}💾 Сохранить изменения{% endif %}
+                </button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">↩️ Отмена</a>
+                
+                {% if action == 'edit' and record_id %}
+                <a href="{% url 'admin_delete_record' %}?table={{ table }}&id={{ record_id }}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
+                    🗑️ Удалить
+                </a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <a href="{% url 'admin_dashboard' %}" class="back-link">← Вернуться в админ панель</a>
+    </div>
+</body>
+</html>

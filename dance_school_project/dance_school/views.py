@@ -19,11 +19,11 @@ def home(request):
     
     # Форма авторизации
     if request.method == 'POST' and 'login_form' in request.POST:
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
+        role = request.POST.get('role', 'client')
+        login_data = request.POST.get('login_data', '').strip()
         password = request.POST.get('password', '').strip()
         
-        user = DatabaseService.authenticate_user(email=email, phone=phone, password=password)
+        user = DatabaseService.authenticate_user(login_data, password, role)
         
         if user:
             user_info = user
@@ -66,12 +66,12 @@ def home(request):
                 'day': item[3],
                 'start_time': item[4],
                 'end_time': item[5],
-                'hall': item[6],
-                'capacity': item[7],
-                'price': float(item[8]),
+                'hall': item[6] if item[6] is not None else 'Не указан',
+                'capacity': item[7] if item[7] is not None else 0,
+                'price': float(item[8]) if item[8] is not None else 0,
                 'status': item[9],
-                'registered': item[10],
-                'available': item[11]
+                'registered': item[10] if item[10] is not None else 0,
+                'available': item[11] if item[11] is not None else 0
             })
     except Exception as e:
         print(f"Ошибка получения расписания: {e}")
@@ -120,12 +120,12 @@ def public_schedule(request):
                 'day': item[3],
                 'start_time': item[4],
                 'end_time': item[5],
-                'hall': item[6],
-                'capacity': item[7],
-                'price': float(item[8]),
+                'hall': item[6] if item[6] is not None else 'Не указан',
+                'capacity': item[7] if item[7] is not None else 0,
+                'price': float(item[8]) if item[8] is not None else 0,
                 'status': item[9],
-                'registered': item[10],
-                'available': item[11]
+                'registered': item[10] if item[10] is not None else 0,
+                'available': item[11] if item[11] is not None else 0
             })
         
         context = {
@@ -137,6 +137,7 @@ def public_schedule(request):
         return render(request, 'dance_school/public_schedule.html', context)
     
     except Exception as e:
+        print(f"Ошибка загрузки расписания: {e}")
         return HttpResponse(f"Ошибка загрузки расписания: {e}")
 
 def trainer_dashboard(request):
@@ -166,7 +167,7 @@ def trainer_dashboard(request):
                 'end_time': sched[3],
                 'hall': sched[4],
                 'style': sched[5],
-                'price': float(sched[6]),
+                'price': float(sched[6]) if sched[6] else 0,
                 'status': sched[7],
                 'students': sched[8],
                 'period_start': sched[9],
@@ -203,6 +204,7 @@ def trainer_dashboard(request):
         return render(request, 'dance_school/trainer_dashboard.html', context)
     
     except Exception as e:
+        print(f"Ошибка загрузки данных: {e}")
         return HttpResponse(f"Ошибка загрузки данных: {e}")
 
 def trainer_edit_schedule(request, schedule_id):
@@ -218,7 +220,33 @@ def trainer_edit_schedule(request, schedule_id):
     except:
         return redirect('home')
     
-    # Получаем данные расписания
+    if request.method == 'POST':
+        try:
+            weekday = request.POST.get('weekday')
+            start_time = request.POST.get('start_time')
+            hall_number = request.POST.get('hall_number')
+            price = request.POST.get('price')
+            status = request.POST.get('status')
+            
+            # Обновляем расписание
+            DatabaseService.execute_query(
+                """
+                UPDATE schedules_nesterovas_21_8 
+                SET class_weekday_nesterovas_21_8 = %s,
+                    class_start_time_nesterovas_21_8 = %s::time,
+                    hall_number_nesterovas_21_8 = %s::integer,
+                    subscription_price_nesterovas_21_8 = %s::numeric,
+                    schedule_status_nesterovas_21_8 = %s
+                WHERE schedule_id = %s
+                """,
+                [weekday, start_time, hall_number, price, status, schedule_id]
+            )
+            
+            return redirect('trainer_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка обновления: {e}")
+    
+    # Получаем данные расписания для формы
     try:
         schedule = DatabaseService.execute_query(
             "SELECT * FROM schedules_nesterovas_21_8 WHERE schedule_id = %s",
@@ -232,42 +260,16 @@ def trainer_edit_schedule(request, schedule_id):
         if schedule[0][1] != user_info.get('trainer_id'):
             return HttpResponse("Нет доступа к этому расписанию")
         
-        # Получаем все залы
-        halls = DatabaseService.get_all_halls()
-        
-        # Получаем информацию о слоте времени
+        # Получаем время окончания из таблицы слотов
         time_slot = DatabaseService.execute_query(
-            "SELECT * FROM training_slots_nesterovas_21_8 WHERE class_start_time_nesterovas_21_8 = %s",
+            "SELECT class_end_time_nesterovas_21_8 FROM training_slots_nesterovas_21_8 WHERE class_start_time_nesterovas_21_8 = %s",
             [schedule[0][4]]
         )
         
-        if request.method == 'POST':
-            try:
-                data = {
-                    'weekday': request.POST.get('weekday'),
-                    'hall_number': int(request.POST.get('hall_number', 0)),
-                    'price': float(request.POST.get('price', 0)),
-                    'status': request.POST.get('status', 'активно')
-                }
-                
-                # Обновляем расписание
-                DatabaseService.execute_query(
-                    """
-                    UPDATE schedules_nesterovas_21_8 
-                    SET class_weekday_nesterovas_21_8 = %s, 
-                        hall_number_nesterovas_21_8 = %s, 
-                        subscription_price_nesterovas_21_8 = %s,
-                        schedule_status_nesterovas_21_8 = %s
-                    WHERE schedule_id = %s
-                    """,
-                    [data['weekday'], data['hall_number'], data['price'], data['status'], schedule_id]
-                )
-                
-                return redirect('trainer_dashboard')
-            except Exception as e:
-                return HttpResponse(f"Ошибка обновления: {e}")
+        end_time = time_slot[0][0] if time_slot else None
         
-        # Формируем контекст для отображения формы
+        halls = DatabaseService.get_all_halls()
+        
         context = {
             'user_info': user_info,
             'schedule': {
@@ -275,11 +277,11 @@ def trainer_edit_schedule(request, schedule_id):
                 'trainer_id': schedule[0][1],
                 'weekday': schedule[0][2],
                 'period_start': schedule[0][3],
-                'start_time': schedule[0][4].strftime('%H:%M') if hasattr(schedule[0][4], 'strftime') else schedule[0][4],
-                'end_time': time_slot[0][1].strftime('%H:%M') if time_slot and hasattr(time_slot[0][1], 'strftime') else '',
+                'start_time': schedule[0][4].strftime('%H:%M') if schedule[0][4] else '',
+                'end_time': end_time.strftime('%H:%M') if end_time else '',
                 'hall': schedule[0][5],
                 'style_id': schedule[0][6],
-                'price': float(schedule[0][7]),
+                'price': float(schedule[0][7]) if schedule[0][7] else 0,
                 'status': schedule[0][8]
             },
             'halls': halls
@@ -288,6 +290,7 @@ def trainer_edit_schedule(request, schedule_id):
         return render(request, 'dance_school/trainer_edit_schedule.html', context)
     
     except Exception as e:
+        print(f"Ошибка: {e}")
         return HttpResponse(f"Ошибка: {e}")
 
 def admin_dashboard(request):
@@ -303,20 +306,34 @@ def admin_dashboard(request):
     except:
         return redirect('home')
     
-    # Обработка функции подсчета клиентов по возрасту
-    age_count_result = None
-    if request.method == 'POST' and 'age_count_form' in request.POST:
+    action = request.GET.get('action', '')
+    table = request.GET.get('table', '')
+    id_to_edit = request.GET.get('id', '')
+    
+    # Обработка добавления/редактирования/удаления
+    if request.method == 'POST':
         try:
-            min_age = int(request.POST.get('min_age', 18))
-            max_age = int(request.POST.get('max_age', 40))
-            count = DatabaseService.get_active_clients_by_age(min_age, max_age)
-            age_count_result = {
-                'min_age': min_age,
-                'max_age': max_age,
-                'count': count
-            }
+            table_name = request.POST.get('table_name')
+            action = request.POST.get('action')
+            record_id = request.POST.get('record_id')
+            
+            if action == 'delete':
+                DatabaseService.delete_record(table_name, record_id)
+            elif action == 'edit':
+                # Сохраняем данные формы в сессии для редактирования
+                request.session['edit_data'] = {
+                    'table': table_name,
+                    'id': record_id,
+                    'form_data': request.POST
+                }
+            elif action == 'save':
+                # Сохраняем изменения
+                form_data = dict(request.POST)
+                DatabaseService.update_record(table_name, record_id, form_data)
+            
+            return redirect('admin_dashboard')
         except Exception as e:
-            age_count_result = {'error': str(e)}
+            return HttpResponse(f"Ошибка обработки: {e}")
     
     # Получаем все данные для админ панели
     try:
@@ -326,6 +343,9 @@ def admin_dashboard(request):
         halls = DatabaseService.get_all_halls()
         schedules = DatabaseService.get_all_schedules()
         registrations = DatabaseService.get_all_registrations()
+        administrators = DatabaseService.get_all_administrators()
+        training_periods = DatabaseService.get_all_training_periods()
+        training_slots = DatabaseService.get_all_training_slots()
         
         # Статистика
         total_clients = len(clients)
@@ -341,14 +361,97 @@ def admin_dashboard(request):
             'halls': halls,
             'schedules': schedules,
             'registrations': registrations,
-            'age_count_result': age_count_result,
+            'administrators': administrators,
+            'training_periods': training_periods,
+            'training_slots': training_slots,
             'total_clients': total_clients,
             'total_trainers': total_trainers,
             'total_classes': total_classes,
-            'active_classes': active_classes
+            'active_classes': active_classes,
+            'action': action,
+            'table': table,
+            'id_to_edit': id_to_edit
         }
         
         return render(request, 'dance_school/admin_dashboard.html', context)
     
     except Exception as e:
+        print(f"Ошибка загрузки данных: {e}")
         return HttpResponse(f"Ошибка загрузки данных: {e}")
+
+def admin_edit_record(request):
+    """Редактирование записи в админ панели"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    table = request.GET.get('table', '')
+    record_id = request.GET.get('id', '')
+    action = request.GET.get('action', 'edit')
+    
+    if request.method == 'POST':
+        try:
+            form_data = {k: v for k, v in request.POST.items() if k not in ['csrfmiddlewaretoken', 'table', 'action']}
+            
+            if action == 'add':
+                DatabaseService.insert_record(table, form_data)
+            elif action == 'edit':
+                DatabaseService.update_record(table, record_id, form_data)
+            
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка сохранения: {e}")
+    
+    # Получаем структуру таблицы и данные записи
+    try:
+        table_structure = DatabaseService.get_table_structure(table)
+        record_data = None
+        
+        if record_id and action == 'edit':
+            record_data = DatabaseService.get_record_by_id(table, record_id)
+        
+        context = {
+            'user_info': user_info,
+            'table': table,
+            'record_id': record_id,
+            'action': action,
+            'table_structure': table_structure,
+            'record_data': record_data[0] if record_data else None
+        }
+        
+        return render(request, 'dance_school/admin_edit_record.html', context)
+    
+    except Exception as e:
+        return HttpResponse(f"Ошибка загрузки формы: {e}")
+
+def admin_delete_record(request):
+    """Удаление записи в админ панели"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            table = request.POST.get('table')
+            record_id = request.POST.get('id')
+            
+            DatabaseService.delete_record(table, record_id)
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка удаления: {e}")
+    
+    return redirect('admin_dashboard')
