@@ -2,8 +2,255 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import json
 import traceback
-from datetime import datetime, date, time  # Импорт datetime добавлен
+from datetime import datetime, date, time
 from .services.database_service import DatabaseService
+
+def admin_add_record(request):
+    """Добавление новой записи в админ панели"""
+    user_cookie = request.COOKIES.get('user_info')
+    if not user_cookie:
+        return redirect('home')
+    
+    try:
+        user_info = json.loads(user_cookie)
+        if user_info.get('role') != 'admin':
+            return redirect('home')
+    except:
+        return redirect('home')
+    
+    table_name = request.GET.get('table', '')
+    
+    if not table_name:
+        return HttpResponse("Не указана таблица")
+    
+    # Определяем primary key для таблицы
+    pk_columns = {
+        'clients_nesterovas_21_8': 'client_id',
+        'trainers_nesterovas_21_8': 'trainer_id',
+        'dance_styles_nesterovas_21_8': 'dance_style_id',
+        'halls_nesterovas_21_8': 'hall_number_nesterovas_21_8',
+        'schedules_nesterovas_21_8': 'schedule_id',
+        'registrations_nesterovas_21_8': 'registration_id',
+        'administrators_nesterovas_21_8': 'admin_username_nesterovas_21_8',
+        'training_periods_nesterovas_21_8': 'period_start_date_nesterovas_21_8',
+        'training_slots_nesterovas_21_8': 'class_start_time_nesterovas_21_8'
+    }
+    
+    pk_column = pk_columns.get(table_name)
+    if not pk_column:
+        return HttpResponse("Неизвестная таблица")
+    
+    if request.method == 'POST':
+        try:
+            # Получаем все данные из формы
+            form_data = {}
+            for key, value in request.POST.items():
+                if key not in ['csrfmiddlewaretoken', 'table', 'id', 'action']:
+                    if value:  # Только если значение не пустое
+                        form_data[key] = value
+            
+            # В зависимости от таблицы используем соответствующий INSERT
+            if table_name == 'clients_nesterovas_21_8':
+                # Используем процедуру из базы данных для клиентов
+                DatabaseService.execute_query(
+                    "CALL insert_client_nesterovas_21_8(%s, %s, %s, %s, %s, %s)",
+                    [
+                        form_data.get('contact_phone_nesterovas_21_8'),
+                        form_data.get('client_full_name_nesterovas_21_8'),
+                        form_data.get('client_birth_date_nesterovas_21_8'),
+                        form_data.get('contact_email_nesterovas_21_8'),
+                        form_data.get('parent_guardian_name_nesterovas_21_8'),
+                        form_data.get('client_status_nesterovas_21_8', 'активен')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'dance_styles_nesterovas_21_8':
+                # Для остальных таблиц используем INSERT
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (dance_style_name_nesterovas_21_8, difficulty_level_nesterovas_21_8, 
+                     target_age_group_nesterovas_21_8, style_status_nesterovas_21_8)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    [
+                        form_data.get('dance_style_name_nesterovas_21_8'),
+                        form_data.get('difficulty_level_nesterovas_21_8'),
+                        form_data.get('target_age_group_nesterovas_21_8'),
+                        form_data.get('style_status_nesterovas_21_8', 'активно')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'trainers_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (trainer_phone_nesterovas_21_8, trainer_full_name_nesterovas_21_8, trainer_email_nesterovas_21_8)
+                    VALUES (%s, %s, %s)
+                    """,
+                    [
+                        form_data.get('trainer_phone_nesterovas_21_8'),
+                        form_data.get('trainer_full_name_nesterovas_21_8'),
+                        form_data.get('trainer_email_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'halls_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (hall_number_nesterovas_21_8, hall_capacity_nesterovas_21_8)
+                    VALUES (%s, %s)
+                    """,
+                    [
+                        form_data.get('hall_number_nesterovas_21_8'),
+                        form_data.get('hall_capacity_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'schedules_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (trainer_id, class_weekday_nesterovas_21_8, period_start_date_nesterovas_21_8, 
+                     class_start_time_nesterovas_21_8, hall_number_nesterovas_21_8, dance_style_id, 
+                     subscription_price_nesterovas_21_8, schedule_status_nesterovas_21_8)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        form_data.get('trainer_id'),
+                        form_data.get('class_weekday_nesterovas_21_8'),
+                        form_data.get('period_start_date_nesterovas_21_8'),
+                        form_data.get('class_start_time_nesterovas_21_8'),
+                        form_data.get('hall_number_nesterovas_21_8'),
+                        form_data.get('dance_style_id'),
+                        form_data.get('subscription_price_nesterovas_21_8'),
+                        form_data.get('schedule_status_nesterovas_21_8', 'активно')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'registrations_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (client_id, schedule_id, registration_datetime_nesterovas_21_8, admin_username_nesterovas_21_8)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    [
+                        form_data.get('client_id'),
+                        form_data.get('schedule_id'),
+                        form_data.get('registration_datetime_nesterovas_21_8'),
+                        form_data.get('admin_username_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'administrators_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (admin_username_nesterovas_21_8, admin_full_name_nesterovas_21_8, 
+                     admin_position_nesterovas_21_8, admin_phone_nesterovas_21_8, admin_password_hash_nesterovas_21_8)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    [
+                        form_data.get('admin_username_nesterovas_21_8'),
+                        form_data.get('admin_full_name_nesterovas_21_8'),
+                        form_data.get('admin_position_nesterovas_21_8'),
+                        form_data.get('admin_phone_nesterovas_21_8'),
+                        form_data.get('admin_password_hash_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'training_periods_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (period_start_date_nesterovas_21_8, period_end_date_nesterovas_21_8)
+                    VALUES (%s, %s)
+                    """,
+                    [
+                        form_data.get('period_start_date_nesterovas_21_8'),
+                        form_data.get('period_end_date_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+                
+            elif table_name == 'training_slots_nesterovas_21_8':
+                DatabaseService.execute_query(
+                    f"""
+                    INSERT INTO {table_name} 
+                    (class_start_time_nesterovas_21_8, class_end_time_nesterovas_21_8)
+                    VALUES (%s, %s)
+                    """,
+                    [
+                        form_data.get('class_start_time_nesterovas_21_8'),
+                        form_data.get('class_end_time_nesterovas_21_8')
+                    ],
+                    fetch=False
+                )
+            
+            return redirect('admin_dashboard')
+        except Exception as e:
+            return HttpResponse(f"Ошибка добавления: {str(e)}")
+    
+    # GET запрос - отображаем форму добавления
+    try:
+        # Получаем структуру таблицы
+        table_structure = DatabaseService.get_table_structure(table_name)
+        
+        # Определяем friendly-имена для таблиц
+        table_display_names = {
+            'clients_nesterovas_21_8': 'Клиенты',
+            'trainers_nesterovas_21_8': 'Тренеры',
+            'dance_styles_nesterovas_21_8': 'Направления танцев',
+            'halls_nesterovas_21_8': 'Залы',
+            'schedules_nesterovas_21_8': 'Расписания',
+            'registrations_nesterovas_21_8': 'Регистрации',
+            'administrators_nesterovas_21_8': 'Администраторы',
+            'training_periods_nesterovas_21_8': 'Периоды занятий',
+            'training_slots_nesterovas_21_8': 'Временные слоты'
+        }
+        
+        # Подготавливаем данные для шаблона
+        columns_data = []
+        for column in table_structure:
+            column_name = column[0]
+            data_type = column[1]
+            is_nullable = column[2] == 'YES'
+            
+            # Пропускаем SERIAL primary keys
+            if column_name in ['client_id', 'trainer_id', 'dance_style_id', 'schedule_id', 'registration_id']:
+                continue
+                
+            columns_data.append({
+                'name': column_name,
+                'data_type': data_type,
+                'is_nullable': is_nullable,
+                'current_value': ''
+            })
+        
+        context = {
+            'user_info': user_info,
+            'table_name': table_name,
+            'table_display': table_display_names.get(table_name, table_name),
+            'columns_data': columns_data,
+            'action': 'add'
+        }
+        
+        return render(request, 'dance_school/admin_edit_record.html', context)
+    
+    except Exception as e:
+        print(f"Ошибка загрузки формы: {str(e)}")
+        traceback.print_exc()
+        return HttpResponse(f"Ошибка загрузки формы: {str(e)}")
+
 
 def home(request):
     """Главная страница с расписанием и функцией расчета скидки для клиентов"""

@@ -15,6 +15,7 @@ urlpatterns = [
     
     # Админ панель
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-panel/add/', views.admin_add_record, name='admin_add_record'),  # ДОБАВЛЕНО
     path('admin-panel/edit/', views.admin_edit_record, name='admin_edit_record'),
     path('admin-panel/delete/', views.admin_delete_record, name='admin_delete_record'),
 ]
