@@ -1,7 +1,7 @@
 import psycopg2
 from django.conf import settings
-from decimal import Decimal
 import traceback
+from datetime import datetime
 
 class DatabaseService:
     @staticmethod
@@ -31,6 +31,7 @@ class DatabaseService:
             print(f"Ошибка выполнения запроса: {e}")
             print(f"Запрос: {query}")
             print(f"Параметры: {params}")
+            traceback.print_exc()
             raise e
         finally:
             cur.close()
@@ -58,7 +59,7 @@ class DatabaseService:
         JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
         JOIN dance_styles_nesterovas_21_8 d ON s.dance_style_id = d.dance_style_id
         JOIN training_slots_nesterovas_21_8 ts ON s.class_start_time_nesterovas_21_8 = ts.class_start_time_nesterovas_21_8
-        JOIN halls_nesterovas_21_8 h ON s.hall_number_nesterovas_21_8 = h.hall_number_nesterovas_21_8
+        LEFT JOIN halls_nesterovas_21_8 h ON s.hall_number_nesterovas_21_8 = h.hall_number_nesterovas_21_8
         LEFT JOIN (
             SELECT r.schedule_id, COUNT(*) as registration_count
             FROM registrations_nesterovas_21_8 r
@@ -84,21 +85,56 @@ class DatabaseService:
     def get_schedule_by_weekday(weekday=None):
         """Табличная функция: возвращает расписание по дню недели (без авторизации)"""
         try:
+            base_query = """
+            SELECT 
+                s.schedule_id,
+                t.trainer_full_name_nesterovas_21_8,
+                d.dance_style_name_nesterovas_21_8,
+                s.class_weekday_nesterovas_21_8,
+                TO_CHAR(s.class_start_time_nesterovas_21_8, 'HH24:MI') as start_time,
+                TO_CHAR(ts.class_end_time_nesterovas_21_8, 'HH24:MI') as end_time,
+                s.hall_number_nesterovas_21_8,
+                h.hall_capacity_nesterovas_21_8,
+                s.subscription_price_nesterovas_21_8,
+                s.schedule_status_nesterovas_21_8,
+                COALESCE(reg.registration_count, 0) as current_registrations,
+                h.hall_capacity_nesterovas_21_8 - COALESCE(reg.registration_count, 0) as available_spots
+            FROM schedules_nesterovas_21_8 s
+            JOIN trainers_nesterovas_21_8 t ON s.trainer_id = t.trainer_id
+            JOIN dance_styles_nesterovas_21_8 d ON s.dance_style_id = d.dance_style_id
+            JOIN training_slots_nesterovas_21_8 ts ON s.class_start_time_nesterovas_21_8 = ts.class_start_time_nesterovas_21_8
+            LEFT JOIN halls_nesterovas_21_8 h ON s.hall_number_nesterovas_21_8 = h.hall_number_nesterovas_21_8
+            LEFT JOIN (
+                SELECT r.schedule_id, COUNT(*) as registration_count
+                FROM registrations_nesterovas_21_8 r
+                GROUP BY r.schedule_id
+            ) reg ON s.schedule_id = reg.schedule_id
+            WHERE s.schedule_status_nesterovas_21_8 = 'активно'
+            """
+            
             if weekday and weekday != 'all':
-                query = "SELECT * FROM get_schedule_by_weekday_nesterovas_21_8(%s)"
+                query = base_query + " AND s.class_weekday_nesterovas_21_8 = %s"
                 return DatabaseService.execute_query(query, [weekday])
             else:
-                # Все активные расписания
-                return DatabaseService.get_all_active_schedules()
+                query = base_query
+                return DatabaseService.execute_query(query)
+                
         except Exception as e:
             print(f"Ошибка в get_schedule_by_weekday: {e}")
+            traceback.print_exc()
             return []
     
     @staticmethod
     def get_active_clients_by_age(min_age, max_age):
         """Скалярная функция: количество клиентов по возрасту (для админов)"""
         try:
-            query = "SELECT get_active_clients_by_age_nesterovas_21_8(%s, %s)"
+            # Вместо вызова функции, используем прямой запрос
+            query = """
+            SELECT COUNT(*) 
+            FROM clients_nesterovas_21_8 
+            WHERE EXTRACT(YEAR FROM AGE(CURRENT_DATE, client_birth_date_nesterovas_21_8)) BETWEEN %s AND %s
+            AND client_status_nesterovas_21_8 = 'активен'
+            """
             result = DatabaseService.execute_query(query, [min_age, max_age])
             return int(result[0][0]) if result and result[0] else 0
         except Exception as e:
@@ -109,9 +145,15 @@ class DatabaseService:
     def calculate_discount(base_price, client_age, registration_count):
         """Функция расчета скидки (для клиентов)"""
         try:
-            query = "SELECT calculate_discount_simple_nesterovas_21_8(%s, %s, %s)"
-            result = DatabaseService.execute_query(query, [float(base_price), client_age, registration_count])
-            return float(result[0][0]) if result and result[0] else float(base_price)
+            # Простая логика расчета скидки
+            discount = 0
+            if client_age < 18:
+                discount += 10  # 10% скидка для несовершеннолетних
+            if registration_count > 3:
+                discount += 15  # 15% скидка за несколько записей
+            
+            final_price = base_price * (1 - discount / 100)
+            return final_price
         except Exception as e:
             print(f"Error in calculate_discount: {e}")
             return float(base_price)
@@ -173,6 +215,7 @@ class DatabaseService:
                 
         except Exception as e:
             print(f"Auth error: {e}")
+            traceback.print_exc()
         
         return None
     
@@ -184,8 +227,8 @@ class DatabaseService:
         SELECT 
             s.schedule_id,
             s.class_weekday_nesterovas_21_8,
-            s.class_start_time_nesterovas_21_8,
-            ts.class_end_time_nesterovas_21_8,
+            TO_CHAR(s.class_start_time_nesterovas_21_8, 'HH24:MI') as start_time,
+            TO_CHAR(ts.class_end_time_nesterovas_21_8, 'HH24:MI') as end_time,
             s.hall_number_nesterovas_21_8,
             d.dance_style_name_nesterovas_21_8,
             s.subscription_price_nesterovas_21_8,
@@ -233,34 +276,16 @@ class DatabaseService:
     def get_trainer_students_count(trainer_id):
         """Количество учеников тренера"""
         try:
-            query = "SELECT get_trainer_students_count_nesterovas_21_8(%s)"
+            query = """
+            SELECT COUNT(DISTINCT r.client_id)
+            FROM registrations_nesterovas_21_8 r
+            JOIN schedules_nesterovas_21_8 s ON r.schedule_id = s.schedule_id
+            WHERE s.trainer_id = %s
+            """
             result = DatabaseService.execute_query(query, [trainer_id])
             return int(result[0][0]) if result and result[0] else 0
         except:
             return 0
-    
-    @staticmethod
-    def update_trainer_schedule(schedule_id, data):
-        """Обновить расписание тренера"""
-        query = """
-        UPDATE schedules_nesterovas_21_8
-        SET 
-            class_weekday_nesterovas_21_8 = %s,
-            class_start_time_nesterovas_21_8 = %s,
-            hall_number_nesterovas_21_8 = %s,
-            subscription_price_nesterovas_21_8 = %s,
-            schedule_status_nesterovas_21_8 = %s
-        WHERE schedule_id = %s
-        """
-        params = [
-            data.get('weekday'),
-            data.get('start_time'),
-            data.get('hall_number'),
-            data.get('price'),
-            data.get('status'),
-            schedule_id
-        ]
-        return DatabaseService.execute_query(query, params)
     
     # Методы для администраторов
     @staticmethod
@@ -292,9 +317,8 @@ class DatabaseService:
     @staticmethod
     def get_all_registrations():
         return DatabaseService.execute_query("""
-            SELECT r.*, c.client_full_name_nesterovas_21_8, s.schedule_id
+            SELECT r.*, c.client_full_name_nesterovas_21_8 
             FROM registrations_nesterovas_21_8 r
             JOIN clients_nesterovas_21_8 c ON r.client_id = c.client_id
-            JOIN schedules_nesterovas_21_8 s ON r.schedule_id = s.schedule_id
             ORDER BY r.registration_id
         """)

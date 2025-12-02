@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание занятий - Школа танцев "Гармония"</title>
+    <title>Публичное расписание - Школа танцев "Гармония"</title>
     <style>
         * {
             margin: 0;
@@ -13,300 +13,357 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: #333;
-            background: #f7fafc;
+            line-height: 1.6;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 20px;
         }
         
-        header {
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #718096;
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        
+        .weekday-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .weekday-nav a {
+            padding: 12px 24px;
+            background: #edf2f7;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .weekday-nav a:hover,
+        .weekday-nav a.active {
+            background: #4299e1;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .schedule-card {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 20px 0;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
-        .header-content {
+        .schedule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .schedule-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
         }
         
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: #333;
-            text-decoration: none;
+        .day-badge {
+            background: #4299e1;
+            color: white;
             padding: 8px 16px;
-            border-radius: 4px;
-            transition: background 0.3s;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9em;
         }
         
-        .nav-links a:hover {
-            background: #f0f0f0;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #667eea;
+        .time-badge {
+            background: #48bb78;
             color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9em;
         }
         
-        .btn:hover {
-            background: #5a67d8;
+        .trainer-info {
+            margin-bottom: 15px;
         }
         
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #667eea;
-            color: #667eea;
-        }
-        
-        .btn-outline:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 60px 0;
-            margin-bottom: 40px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .section {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .section h2 {
-            margin-bottom: 20px;
+        .trainer-name {
+            font-size: 1.3em;
             color: #2d3748;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
         
-        .weekday-filter {
+        .dance-style {
+            color: #718096;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            flex-direction: column;
         }
         
-        .weekday-btn {
-            padding: 8px 16px;
-            background: #e2e8f0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
+        .detail-label {
+            font-size: 0.85em;
+            color: #a0aec0;
+            margin-bottom: 5px;
         }
         
-        .weekday-btn:hover {
-            background: #cbd5e0;
-        }
-        
-        .weekday-btn.active {
-            background: #667eea;
-            color: white;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        th {
-            background: #f7fafc;
+        .detail-value {
             font-weight: 600;
             color: #4a5568;
         }
         
-        tr:hover {
-            background: #f7fafc;
+        .capacity-meter {
+            margin-bottom: 20px;
         }
         
-        .price {
-            color: #38a169;
-            font-weight: bold;
-        }
-        
-        .available {
-            color: #38a169;
-            font-weight: 500;
-        }
-        
-        .full {
-            color: #e53e3e;
-            font-weight: 500;
-        }
-        
-        footer {
-            background: #2d3748;
-            color: white;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-        
-        .footer-content {
+        .meter-label {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .meter-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            background: #48bb78;
+            border-radius: 4px;
+        }
+        
+        .price-tag {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 15px 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #f6e05e, #d69e2e);
+            border-radius: 10px;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #4a5568;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .back-button:hover {
+            background: #2d3748;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 55, 72, 0.4);
+        }
+        
+        .no-classes {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 15px;
+            grid-column: 1 / -1;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #4299e1;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
         }
         
         @media (max-width: 768px) {
-            .header-content {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .weekday-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .weekday-nav a {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .stats-bar {
                 flex-direction: column;
                 gap: 15px;
-            }
-            
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            table {
-                display: block;
-                overflow-x: auto;
             }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <a href="/" class="logo">Школа танцев "Гармония"</a>
-                <div class="nav-links">
-                    <a href="/">Главная</a>
-                    <a href="{% url 'public_schedule' %}" class="btn">Расписание</a>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Публичное расписание занятий</h1>
+            <p>Выберите день недели для просмотра доступных занятий</p>
+            
+            <div class="weekday-nav">
+                <a href="?weekday=all" class="{% if selected_weekday == 'all' %}active{% endif %}">Все дни</a>
+                <a href="?weekday=Понедельник" class="{% if selected_weekday == 'Понедельник' %}active{% endif %}">Понедельник</a>
+                <a href="?weekday=Вторник" class="{% if selected_weekday == 'Вторник' %}active{% endif %}">Вторник</a>
+                <a href="?weekday=Среда" class="{% if selected_weekday == 'Среда' %}active{% endif %}">Среда</a>
+                <a href="?weekday=Четверг" class="{% if selected_weekday == 'Четверг' %}active{% endif %}">Четверг</a>
+                <a href="?weekday=Пятница" class="{% if selected_weekday == 'Пятница' %}active{% endif %}">Пятница</a>
+                <a href="?weekday=Суббота" class="{% if selected_weekday == 'Суббота' %}active{% endif %}">Суббота</a>
+                <a href="?weekday=Воскресенье" class="{% if selected_weekday == 'Воскресенье' %}active{% endif %}">Воскресенье</a>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_classes }}</div>
+                    <div class="stat-label">Всего занятий</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ selected_weekday|default:"Все дни" }}</div>
+                    <div class="stat-label">Выбранный день</div>
                 </div>
             </div>
-        </div>
-    </header>
-    
-    <div class="container">
-        <div class="hero">
-            <h1>Расписание занятий</h1>
-            <p>Выберите день недели для просмотра доступных занятий</p>
         </div>
         
-        <div class="section">
-            <h2>Фильтр по дням недели</h2>
-            <div class="weekday-filter">
-                <a href="?weekday=all" class="weekday-btn {% if selected_weekday == 'all' %}active{% endif %}">Все дни</a>
-                <a href="?weekday=Понедельник" class="weekday-btn {% if selected_weekday == 'Понедельник' %}active{% endif %}">Понедельник</a>
-                <a href="?weekday=Вторник" class="weekday-btn {% if selected_weekday == 'Вторник' %}active{% endif %}">Вторник</a>
-                <a href="?weekday=Среда" class="weekday-btn {% if selected_weekday == 'Среда' %}active{% endif %}">Среда</a>
-                <a href="?weekday=Четверг" class="weekday-btn {% if selected_weekday == 'Четверг' %}active{% endif %}">Четверг</a>
-                <a href="?weekday=Пятница" class="weekday-btn {% if selected_weekday == 'Пятница' %}active{% endif %}">Пятница</a>
-                <a href="?weekday=Суббота" class="weekday-btn {% if selected_weekday == 'Суббота' %}active{% endif %}">Суббота</a>
-                <a href="?weekday=Воскресенье" class="weekday-btn {% if selected_weekday == 'Воскресенье' %}active{% endif %}">Воскресенье</a>
-            </div>
-            
-            <h3>Найдено занятий: {{ total_classes }}</h3>
-            
-            {% if schedule_data %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>День недели</th>
-                            <th>Время</th>
-                            <th>Направление</th>
-                            <th>Тренер</th>
-                            <th>Зал</th>
-                            <th>Цена</th>
-                            <th>Записалось</th>
-                            <th>Свободно</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in schedule_data %}
-                        <tr>
-                            <td>{{ item.day }}</td>
-                            <td>{{ item.start_time }} - {{ item.end_time }}</td>
-                            <td>{{ item.style }}</td>
-                            <td>{{ item.trainer }}</td>
-                            <td>Зал №{{ item.hall }}</td>
-                            <td class="price">{{ item.price }} руб.</td>
-                            <td>{{ item.registered }}</td>
-                            <td class="{% if item.available > 0 %}available{% else %}full{% endif %}">
-                                {{ item.available }} из {{ item.capacity }}
-                            </td>
-                            <td>{{ item.status }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <div style="text-align: center; padding: 40px;">
-                    <h3>На выбранный день нет доступных занятий</h3>
-                    <p>Попробуйте выбрать другой день или обратитесь к администратору.</p>
+        {% if schedule_data %}
+            <div class="schedule-grid">
+                {% for item in schedule_data %}
+                <div class="schedule-card">
+                    <div class="schedule-header">
+                        <div class="day-badge">{{ item.day }}</div>
+                        <div class="time-badge">{{ item.start_time }} - {{ item.end_time }}</div>
+                    </div>
+                    
+                    <div class="trainer-info">
+                        <div class="trainer-name">👨‍🏫 {{ item.trainer }}</div>
+                        <div class="dance-style">💃 {{ item.style }}</div>
+                    </div>
+                    
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Зал</span>
+                            <span class="detail-value">№{{ item.hall }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Вместимость</span>
+                            <span class="detail-value">{{ item.capacity }} чел.</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Записано</span>
+                            <span class="detail-value">{{ item.registered }} чел.</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Свободно</span>
+                            <span class="detail-value">{{ item.available }} мест</span>
+                        </div>
+                    </div>
+                    
+                    <div class="capacity-meter">
+                        <div class="meter-label">
+                            <span>Занятость:</span>
+                            <span>{{ item.registered }}/{{ item.capacity }}</span>
+                        </div>
+                        <div class="meter-bar">
+                            {% if item.capacity > 0 %}
+                            <div class="meter-fill" style="width: {% widthratio item.registered item.capacity 100 %}%"></div>
+                            {% else %}
+                            <div class="meter-fill" style="width: 0%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="price-tag">
+                        {{ item.price|floatformat:"0" }} ₽
+                    </div>
+                    
+                    <div style="text-align: center; font-size: 0.9em; color: #718096;">
+                        Статус: <strong style="color: {% if item.status == 'активно' %}#48bb78{% else %}#e53e3e{% endif %}">{{ item.status }}</strong>
+                    </div>
                 </div>
-            {% endif %}
-            
-            <div style="margin-top: 20px;">
-                <a href="/" class="btn btn-outline">Вернуться на главную</a>
+                {% endfor %}
             </div>
+        {% else %}
+            <div class="no-classes">
+                <h2>📭 Занятий на выбранный день не найдено</h2>
+                <p>Попробуйте выбрать другой день недели</p>
+            </div>
+        {% endif %}
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" class="back-button">← Вернуться на главную</a>
         </div>
     </div>
-    
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div>
-                    <h3>Школа танцев "Гармония"</h3>
-                    <p>© 2024 Все права защищены</p>
-                </div>
-                <div>
-                    <p>Контактная информация:</p>
-                    <p>Телефон: +7 (916) 123-45-67</p>
-                    <p>Email: info@dance-school.ru</p>
-                </div>
-            </div>
-        </div>
-    </footer>
 </body>
 </html>

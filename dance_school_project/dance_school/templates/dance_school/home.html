@@ -328,14 +328,20 @@
             <div class="header-content">
                 <a href="/" class="logo">Школа танцев "Гармония"</a>
                 
-                <div class="nav-links">
-                    <a href="/">Главная</a>
-                    <a href="{% url 'public_schedule' %}">Расписание</a>
+                <!-- В разделе навигации главной страницы -->
+                <div class="nav-buttons">
+                    <a href="{% url 'public_schedule' %}" class="nav-button">
+                        <i>📅</i> Расписание
+                    </a>
                     {% if user_info %}
                         {% if user_info.role == 'admin' %}
-                            <a href="{% url 'admin_dashboard' %}">Админ панель</a>
+                            <a href="{% url 'admin_dashboard' %}" class="nav-button">
+                                <i>⚙️</i> Админ панель
+                            </a>
                         {% elif user_info.role == 'trainer' %}
-                            <a href="{% url 'trainer_dashboard' %}">Тренер панель</a>
+                            <a href="{% url 'trainer_dashboard' %}" class="nav-button">
+                                <i>👨‍🏫</i> Тренер панель
+                            </a>
                         {% endif %}
                     {% endif %}
                 </div>

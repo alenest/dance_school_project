@@ -104,7 +104,41 @@ def logout(request):
     response.delete_cookie('user_info')
     return response
 
-# Тренерская панель
+def public_schedule(request):
+    """Публичное расписание (доступно без авторизации)"""
+    weekday = request.GET.get('weekday', 'all')
+    
+    try:
+        schedule_data = DatabaseService.get_schedule_by_weekday(weekday if weekday != 'all' else None)
+        
+        formatted_schedule = []
+        for item in schedule_data:
+            formatted_schedule.append({
+                'id': item[0],
+                'trainer': item[1],
+                'style': item[2],
+                'day': item[3],
+                'start_time': item[4],
+                'end_time': item[5],
+                'hall': item[6],
+                'capacity': item[7],
+                'price': float(item[8]),
+                'status': item[9],
+                'registered': item[10],
+                'available': item[11]
+            })
+        
+        context = {
+            'schedule_data': formatted_schedule,
+            'selected_weekday': weekday,
+            'total_classes': len(formatted_schedule)
+        }
+        
+        return render(request, 'dance_school/public_schedule.html', context)
+    
+    except Exception as e:
+        return HttpResponse(f"Ошибка загрузки расписания: {e}")
+
 def trainer_dashboard(request):
     """Панель тренера"""
     user_cookie = request.COOKIES.get('user_info')
@@ -184,22 +218,7 @@ def trainer_edit_schedule(request, schedule_id):
     except:
         return redirect('home')
     
-    if request.method == 'POST':
-        try:
-            data = {
-                'weekday': request.POST.get('weekday'),
-                'start_time': request.POST.get('start_time'),
-                'hall_number': int(request.POST.get('hall_number', 0)),
-                'price': float(request.POST.get('price', 0)),
-                'status': request.POST.get('status', 'активно')
-            }
-            
-            DatabaseService.update_trainer_schedule(schedule_id, data)
-            return redirect('trainer_dashboard')
-        except Exception as e:
-            return HttpResponse(f"Ошибка обновления: {e}")
-    
-    # Получаем данные расписания для формы
+    # Получаем данные расписания
     try:
         schedule = DatabaseService.execute_query(
             "SELECT * FROM schedules_nesterovas_21_8 WHERE schedule_id = %s",
@@ -213,11 +232,56 @@ def trainer_edit_schedule(request, schedule_id):
         if schedule[0][1] != user_info.get('trainer_id'):
             return HttpResponse("Нет доступа к этому расписанию")
         
+        # Получаем все залы
         halls = DatabaseService.get_all_halls()
         
+        # Получаем информацию о слоте времени
+        time_slot = DatabaseService.execute_query(
+            "SELECT * FROM training_slots_nesterovas_21_8 WHERE class_start_time_nesterovas_21_8 = %s",
+            [schedule[0][4]]
+        )
+        
+        if request.method == 'POST':
+            try:
+                data = {
+                    'weekday': request.POST.get('weekday'),
+                    'hall_number': int(request.POST.get('hall_number', 0)),
+                    'price': float(request.POST.get('price', 0)),
+                    'status': request.POST.get('status', 'активно')
+                }
+                
+                # Обновляем расписание
+                DatabaseService.execute_query(
+                    """
+                    UPDATE schedules_nesterovas_21_8 
+                    SET class_weekday_nesterovas_21_8 = %s, 
+                        hall_number_nesterovas_21_8 = %s, 
+                        subscription_price_nesterovas_21_8 = %s,
+                        schedule_status_nesterovas_21_8 = %s
+                    WHERE schedule_id = %s
+                    """,
+                    [data['weekday'], data['hall_number'], data['price'], data['status'], schedule_id]
+                )
+                
+                return redirect('trainer_dashboard')
+            except Exception as e:
+                return HttpResponse(f"Ошибка обновления: {e}")
+        
+        # Формируем контекст для отображения формы
         context = {
             'user_info': user_info,
-            'schedule': schedule[0],
+            'schedule': {
+                'id': schedule[0][0],
+                'trainer_id': schedule[0][1],
+                'weekday': schedule[0][2],
+                'period_start': schedule[0][3],
+                'start_time': schedule[0][4].strftime('%H:%M') if hasattr(schedule[0][4], 'strftime') else schedule[0][4],
+                'end_time': time_slot[0][1].strftime('%H:%M') if time_slot and hasattr(time_slot[0][1], 'strftime') else '',
+                'hall': schedule[0][5],
+                'style_id': schedule[0][6],
+                'price': float(schedule[0][7]),
+                'status': schedule[0][8]
+            },
             'halls': halls
         }
         
@@ -226,7 +290,6 @@ def trainer_edit_schedule(request, schedule_id):
     except Exception as e:
         return HttpResponse(f"Ошибка: {e}")
 
-# Админ панель (добавлены функции ТЗ)
 def admin_dashboard(request):
     """Админ панель с функциями ТЗ"""
     user_cookie = request.COOKIES.get('user_info')
@@ -255,38 +318,6 @@ def admin_dashboard(request):
         except Exception as e:
             age_count_result = {'error': str(e)}
     
-    # Обработка функции проверки возраста
-    age_check_result = None
-    if request.method == 'POST' and 'age_check_form' in request.POST:
-        try:
-            birth_date = request.POST.get('birth_date')
-            age_group = request.POST.get('age_group', '18+')
-            
-            # Функция проверки возраста
-            query = """
-            SELECT 
-                EXTRACT(YEAR FROM AGE(CURRENT_DATE, %s::date)) >= 
-                CASE 
-                    WHEN %s = '12+' THEN 12
-                    WHEN %s = '16+' THEN 16
-                    WHEN %s = '18+' THEN 18
-                    WHEN %s = '21+' THEN 21
-                    ELSE 0
-                END as is_allowed
-            """
-            result = DatabaseService.execute_query(query, [birth_date, age_group, age_group, age_group])
-            
-            if result and result[0]:
-                is_allowed = bool(result[0][0])
-                age_check_result = {
-                    'birth_date': birth_date,
-                    'age_group': age_group,
-                    'is_allowed': is_allowed,
-                    'result_text': "Доступ разрешен" if is_allowed else "Доступ запрещен"
-                }
-        except Exception as e:
-            age_check_result = {'error': str(e)}
-    
     # Получаем все данные для админ панели
     try:
         clients = DatabaseService.get_all_clients()
@@ -311,7 +342,6 @@ def admin_dashboard(request):
             'schedules': schedules,
             'registrations': registrations,
             'age_count_result': age_count_result,
-            'age_check_result': age_check_result,
             'total_clients': total_clients,
             'total_trainers': total_trainers,
             'total_classes': total_classes,
@@ -322,39 +352,3 @@ def admin_dashboard(request):
     
     except Exception as e:
         return HttpResponse(f"Ошибка загрузки данных: {e}")
-
-# Публичное расписание по дням недели
-def public_schedule(request):
-    """Публичное расписание (доступно без авторизации)"""
-    weekday = request.GET.get('weekday', 'all')
-    
-    try:
-        schedule_data = DatabaseService.get_schedule_by_weekday(weekday if weekday != 'all' else None)
-        
-        formatted_schedule = []
-        for item in schedule_data:
-            formatted_schedule.append({
-                'id': item[0],
-                'trainer': item[1],
-                'style': item[2],
-                'day': item[3],
-                'start_time': item[4],
-                'end_time': item[5],
-                'hall': item[6],
-                'capacity': item[7],
-                'price': float(item[8]),
-                'status': item[9],
-                'registered': item[10],
-                'available': item[11]
-            })
-        
-        context = {
-            'schedule_data': formatted_schedule,
-            'selected_weekday': weekday,
-            'total_classes': len(formatted_schedule)
-        }
-        
-        return render(request, 'dance_school/public_schedule.html', context)
-    
-    except Exception as e:
-        return HttpResponse(f"Ошибка загрузки расписания: {e}")

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование расписания - Школа танцев "Гармония"</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .header p {
+            color: #718096;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            text-align: center;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .edit-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #a0aec0;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #718096;
+            transform: translateY(-2px);
+        }
+        
+        .current-info {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .info-value {
+            color: #718096;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .edit-form {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✏️ Редактирование расписания</h1>
+            <p>Изменение параметров занятия</p>
+            
+            {% if user_info %}
+            <div class="user-info">
+                Вы вошли как: <strong>{{ user_info.full_name }}</strong> (тренер)
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="current-info">
+            <h3 style="margin-bottom: 15px; color: #4a5568;">📋 Текущая информация:</h3>
+            <div class="info-item">
+                <span class="info-label">Направление:</span>
+                <span class="info-value">ID: {{ schedule.style_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">День недели:</span>
+                <span class="info-value">{{ schedule.weekday }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Время:</span>
+                <span class="info-value">{{ schedule.start_time }} - {{ schedule.end_time }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Период:</span>
+                <span class="info-value">{{ schedule.period_start }}</span>
+            </div>
+        </div>
+        
+        <form method="post" class="edit-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="weekday">День недели *</label>
+                <select id="weekday" name="weekday" required>
+                    <option value="Понедельник" {% if schedule.weekday == 'Понедельник' %}selected{% endif %}>Понедельник</option>
+                    <option value="Вторник" {% if schedule.weekday == 'Вторник' %}selected{% endif %}>Вторник</option>
+                    <option value="Среда" {% if schedule.weekday == 'Среда' %}selected{% endif %}>Среда</option>
+                    <option value="Четверг" {% if schedule.weekday == 'Четверг' %}selected{% endif %}>Четверг</option>
+                    <option value="Пятница" {% if schedule.weekday == 'Пятница' %}selected{% endif %}>Пятница</option>
+                    <option value="Суббота" {% if schedule.weekday == 'Суббота' %}selected{% endif %}>Суббота</option>
+                    <option value="Воскресенье" {% if schedule.weekday == 'Воскресенье' %}selected{% endif %}>Воскресенье</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="hall_number">Зал *</label>
+                <select id="hall_number" name="hall_number" required>
+                    <option value="">Выберите зал</option>
+                    {% for hall in halls %}
+                        <option value="{{ hall.0 }}" {% if hall.0 == schedule.hall %}selected{% endif %}>
+                            Зал {{ hall.0 }} (вместимость: {{ hall.1 }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="price">Стоимость абонемента (руб.) *</label>
+                <input type="number" id="price" name="price" value="{{ schedule.price|floatformat:'0' }}" min="0" step="100" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Статус занятия *</label>
+                <select id="status" name="status" required>
+                    <option value="активно" {% if schedule.status == 'активно' %}selected{% endif %}>Активно</option>
+                    <option value="неактивно" {% if schedule.status == 'неактивно' %}selected{% endif %}>Неактивно</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
+                <a href="{% url 'trainer_dashboard' %}" class="btn btn-secondary">↩️ Отмена</a>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #718096;">
+                <p>* - обязательные для заполнения поля</p>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
